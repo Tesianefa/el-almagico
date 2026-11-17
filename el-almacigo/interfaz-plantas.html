@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>El almácigo · Interfaz de plantas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lily+Script+One&family=Rochester&family=Poppins:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<!-- Visor de modelos 3D (formato .glb). Sin internet: descarga este archivo y cambia el src por su nombre local -->
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
+<style>
+  /* ===== TIPOGRAFÍAS (Google Fonts) =====
+     Nombre de la planta: Lily Script One
+     Títulos y etiquetas: Rochester
+     Cuerpo: Poppins
+     Los colores de cada planta están en PALETAS, dentro del <script>. */
+
+  :root{
+    --oro:#d9c58c;
+    --oro-tenue:rgba(217,197,140,.35);
+    --nombre:"Lily Script One",Georgia,cursive;
+    --titulos:"Rochester",Georgia,cursive;
+    --fuente:"Poppins","Segoe UI",Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;background:var(--fondo);overflow:hidden;transition:background-color .8s}
+  body{font-family:var(--fuente);color:var(--texto);position:relative}
+  body.transparente{background:transparent !important}
+  body.transparente #fondo{display:none}
+
+  /* Escenario fijo 1920×1080, centrado y escalado */
+  #escenario{position:absolute;left:50%;top:50%;width:1920px;height:1080px;
+    transform-origin:center;transform:translate(-50%,-50%) scale(var(--k,1))}
+  #fondo{position:absolute;inset:0;
+    background:
+      radial-gradient(ellipse 50% 55% at 50% 50%, var(--fondo-luz), transparent 70%),
+      radial-gradient(ellipse 40% 50% at 0% 100%, rgba(var(--profundo-rgb),.35), transparent 70%),
+      radial-gradient(ellipse 40% 50% at 100% 0%, rgba(var(--profundo-rgb),.25), transparent 70%)}
+  #luciernagas{position:absolute;inset:0;width:100%;height:100%}
+
+  /* Transición entre plantas */
+  #contenido{position:absolute;inset:0;transition:opacity .45s ease}
+  #contenido.oculto{opacity:0}
+
+  /* Bloques con posición fija (según el wireframe) */
+  .bloque{position:absolute}
+  /* Columna izquierda: nombre, condiciones, semilla, cosecha
+     Columna derecha:   cuidado, flor, usos
+     La semilla y la flor quedan a la misma altura; cosecha y usos también. */
+  #encabezado {left:90px;  top:60px;  width:420px}
+  #condiciones{left:90px;  top:232px; width:420px}
+  #semilla    {left:90px;  top:462px; width:420px}
+  #cosecha    {left:90px;  top:800px; width:420px}
+  #cuidado    {right:90px; top:60px;  width:420px}
+  #flor       {right:90px; top:462px; width:420px}
+  #consumo    {right:90px; top:800px; width:420px}
+  .ficha{transition:opacity .45s}
+  body.en-reposo .ficha{opacity:0;pointer-events:none}
+
+  /* Títulos con ramita */
+  h2{font-family:var(--titulos);font-size:48px;line-height:1.1;font-weight:400;color:var(--brillo);
+     letter-spacing:.03em;display:flex;align-items:center;gap:12px;
+     text-shadow:0 0 18px rgba(var(--brillo-rgb),.35)}
+  h2 svg{width:30px;height:30px;flex:none}
+  .divisor{height:1px;margin:10px 0 18px;
+     background:linear-gradient(90deg,var(--acento),rgba(var(--acento-rgb),0) 90%);position:relative}
+  .divisor::before{content:"";position:absolute;left:0;top:-3px;width:7px;height:7px;transform:rotate(45deg);background:var(--oro)}
+  /* Todo el texto de lectura comparte tamaño, peso y color */
+  p,.lista li{font-size:21px;font-weight:400;line-height:1.55;color:var(--texto);
+     text-shadow:0 1px 10px rgba(0,0,0,.65)}
+
+  /* Encabezado */
+  #nombre{font-family:var(--nombre);font-size:84px;font-weight:400;line-height:.95;color:var(--brillo);
+          text-shadow:0 0 28px rgba(var(--brillo-rgb),.4)}
+  #cientifico{font-size:22px;font-weight:300;font-style:italic;color:var(--oro);margin-top:14px;letter-spacing:.03em}
+
+  /* Tres círculos */
+  #condiciones{display:flex;justify-content:space-between}
+  .cond{width:132px;text-align:center}
+  .circ{width:86px;height:86px;margin:0 auto 10px;border-radius:50%;display:grid;place-items:center;
+        border:1px solid var(--oro-tenue);
+        box-shadow:0 0 18px rgba(var(--acento-rgb),.18), inset 0 0 18px rgba(var(--acento-rgb),.12)}
+  .circ svg{width:40px;height:40px;fill:none;stroke:var(--brillo);stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round}
+  .cond b{display:block;font-family:var(--titulos);font-size:32px;font-weight:400;line-height:1.1;color:var(--brillo)}
+  .cond small{display:block;font-size:17px;font-weight:400;color:var(--texto);line-height:1.35;margin-top:6px;
+              white-space:pre-line;text-shadow:0 1px 10px rgba(0,0,0,.65)}
+
+
+  /* Lista de cuidados con hojitas */
+  .lista{list-style:none}
+  .lista li{position:relative;padding-left:34px;margin-bottom:14px}
+  .lista li:last-child{margin-bottom:0}
+  .lista li svg{position:absolute;left:0;top:.35em;width:20px;height:20px;fill:var(--acento);opacity:.9}
+  .rama{color:var(--acento)}
+
+  /* ================= RECUADROS DE SEMILLA Y FLOR =================
+     Mismo marco a los dos lados. Para cambiar la altura, cambia --alto-marco. */
+  .marco{--alto-marco:250px;position:relative;width:100%;height:var(--alto-marco);display:grid;place-items:center;
+    border:1px solid rgba(var(--acento-rgb),.22);
+    background:radial-gradient(ellipse 60% 60% at 50% 50%, rgba(var(--acento-rgb),.12), transparent 75%)}
+  /* Esquinas doradas */
+  .marco::before{content:"";position:absolute;inset:-6px;pointer-events:none;
+    --e:linear-gradient(var(--oro),var(--oro));
+    background:
+      var(--e) top left/26px 1.5px no-repeat,    var(--e) top left/1.5px 26px no-repeat,
+      var(--e) top right/26px 1.5px no-repeat,   var(--e) top right/1.5px 26px no-repeat,
+      var(--e) bottom left/26px 1.5px no-repeat, var(--e) bottom left/1.5px 26px no-repeat,
+      var(--e) bottom right/26px 1.5px no-repeat,var(--e) bottom right/1.5px 26px no-repeat}
+  .marco img{max-width:86%;max-height:86%;object-fit:contain;
+    filter:drop-shadow(0 0 18px rgba(var(--brillo-rgb),.18))}
+  .marco model-viewer{width:100%;height:100%;background:transparent;--poster-color:transparent;--progress-bar-height:0px}
+  .marco .vacio{width:72px;height:72px;fill:none;stroke:rgba(var(--acento-rgb),.45);stroke-width:1;
+    stroke-linecap:round;stroke-linejoin:round}
+  .pie{margin-top:14px;text-align:center;font-family:var(--titulos);font-size:34px;line-height:1.1;
+    color:var(--brillo);text-shadow:0 0 16px rgba(var(--brillo-rgb),.3)}
+
+  /* Enlace de regreso al sitio (solo con #volver en la dirección) */
+  #volver{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:50;display:none;
+    padding:9px 20px;border-radius:999px;font-family:var(--fuente);font-size:15px;color:var(--texto);
+    text-decoration:none;background:rgba(10,10,10,.72);border:1px solid var(--oro-tenue);
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+  body.con-volver #volver{display:block}
+  #volver:hover{border-color:var(--oro)}
+  #volver:focus-visible{outline:2px solid var(--brillo);outline-offset:3px}
+  /* Dentro del sitio web (#incrustado) se ocultan los avisos de Arduino y sonido */
+  body.incrustado #serial, body.incrustado #avisoSonido{display:none}
+
+  /* Mensaje de reposo (sin etiqueta en ningún lector) */
+  #reposo{position:absolute;left:510px;top:90px;width:900px;height:900px;display:grid;place-content:center;
+          text-align:center;opacity:0;transition:opacity .6s;pointer-events:none}
+  body.en-reposo #reposo{opacity:1}
+  #reposo b{display:block;font-family:var(--titulos);font-size:64px;font-weight:400;color:var(--brillo);
+            text-shadow:0 0 24px rgba(var(--brillo-rgb),.4)}
+  #reposo small{display:block;font-size:18px;font-weight:300;color:var(--texto-2);margin-top:8px;letter-spacing:.05em}
+
+  /* Círculo central */
+  #orbita{position:absolute;left:510px;top:90px;width:900px;height:900px;overflow:visible}
+  #orbita .anillo{filter:drop-shadow(0 0 6px rgba(var(--brillo-rgb),.45))}
+  #orbita .punteado{stroke:rgba(var(--acento-rgb),.35)}
+  #orbita .giro{transform-origin:450px 450px;animation:giro 300s linear infinite}
+  #orbita .giro-inv{transform-origin:450px 450px;animation:giro 420s linear infinite reverse}
+  #orbita .destello{fill:var(--brillo);animation:titila 4s ease-in-out infinite}
+  @keyframes giro{to{transform:rotate(360deg)}}
+  @keyframes titila{50%{opacity:.35}}
+  @media (prefers-reduced-motion:reduce){#orbita .giro,#orbita .giro-inv,#orbita .destello{animation:none}}
+
+  /* ================= PANEL DE CONEXIÓN CON ARDUINO =================
+     Flota sobre la interfaz, fuera del escenario escalado.
+     Se oculta solo al conectar; la tecla C lo muestra u oculta. */
+  #serial{position:fixed;left:24px;bottom:24px;z-index:50;display:flex;align-items:center;gap:14px;
+    padding:12px 14px 12px 18px;border-radius:999px;font-family:var(--fuente);font-size:15px;
+    color:var(--texto);background:rgba(10,10,10,.72);border:1px solid var(--oro-tenue);
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+    transition:opacity .5s, transform .5s}
+  #serial.escondido{opacity:0;transform:translateY(12px);pointer-events:none}
+  #serial .luz{width:12px;height:12px;border-radius:50%;flex:none;background:#77736a}
+  #serial[data-estado="conectado"] .luz{background:#7fd69f;box-shadow:0 0 10px #7fd69f}
+  #serial[data-estado="conectando"] .luz{background:var(--oro);animation:titila 1s infinite}
+  #serial[data-estado="error"] .luz,#serial[data-estado="incompatible"] .luz{background:#ff8f8f}
+  #serial .textos{display:grid;line-height:1.3}
+  #serial .textos b{font-weight:500}
+  #serial .textos small{font-size:12.5px;font-weight:300;color:var(--texto-2);max-width:340px}
+  #serial button{font:inherit;font-weight:500;cursor:pointer;border-radius:999px;padding:9px 18px;
+    border:1px solid var(--oro);background:var(--oro);color:#111}
+  #serial button.secundario{background:transparent;color:var(--texto);border-color:var(--oro-tenue)}
+  #serial button[hidden]{display:none}
+  #serial button:focus-visible{outline:2px solid var(--brillo);outline-offset:3px}
+  #serial button:disabled{opacity:.45;cursor:default}
+
+  /* ================= VISOR 3D =================
+     Ocupa el interior del círculo central (el anillo dorado tiene 880 px de diámetro).
+     Para que el modelo se vea más grande o más pequeño, cambia --tam-modelo. */
+  #visor{--tam-modelo:820px;
+         position:absolute;left:calc(960px - var(--tam-modelo) / 2);top:calc(540px - var(--tam-modelo) / 2);
+         width:var(--tam-modelo);height:var(--tam-modelo);border-radius:50%;
+         background:transparent;--poster-color:transparent;--progress-bar-height:0px;
+         transition:opacity .45s}
+  #visor.sin-modelo{opacity:0}
+
+  /* ================= AVISO DE SONIDO =================
+     Chrome no deja sonar audio hasta que alguien hace clic o pulsa una tecla en la página.
+     Este aviso aparece mientras tanto, y también cuando el sonido está apagado (tecla M). */
+  #avisoSonido{position:fixed;right:24px;bottom:24px;z-index:50;display:flex;align-items:center;gap:10px;
+    padding:11px 18px;border-radius:999px;font-family:var(--fuente);font-size:14px;font-weight:400;
+    color:var(--texto);background:rgba(10,10,10,.72);border:1px solid var(--oro-tenue);
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);cursor:pointer;
+    transition:opacity .5s, transform .5s}
+  #avisoSonido.escondido{opacity:0;transform:translateY(12px);pointer-events:none}
+  #avisoSonido svg{width:18px;height:18px;fill:none;stroke:var(--oro);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</head>
+<body class="en-reposo">
+<div id="escenario">
+  <div id="fondo"></div>
+  <canvas id="luciernagas"></canvas>
+
+  <div id="contenido">
+    <!-- Círculo central: aquí se muestra el modelo 3D de cada planta -->
+    <svg id="orbita" viewBox="0 0 900 900" aria-hidden="true">
+      <circle class="anillo" cx="450" cy="450" r="440" fill="none" stroke="rgba(217,197,140,.75)" stroke-width="1.5"/>
+      <g class="giro-inv">
+        <circle class="punteado" cx="450" cy="450" r="424" fill="none" stroke-width="1" stroke-dasharray="2 10"/>
+      </g>
+      <g class="giro" id="adornos"></g>
+    </svg>
+
+    <div id="reposo">
+      <b>Acerca una semilla</b>
+      <small>para descubrir una planta</small>
+    </div>
+
+    <!-- Izquierda -->
+    <section id="encabezado" class="bloque ficha">
+      <h1 id="nombre"></h1>
+      <div id="cientifico"></div>
+    </section>
+
+    <section id="condiciones" class="bloque ficha"></section>
+
+    <!-- Modelo 3D dentro del círculo central -->
+    <model-viewer id="visor" class="ficha"
+      auto-rotate rotation-per-second="18deg"
+      auto-rotate-delay="0"
+      interaction-prompt="none"
+      shadow-intensity="0.8"
+      exposure="1.1"
+      disable-zoom disable-pan
+      loading="eager">
+    </model-viewer>
+
+    <!-- Semilla (izquierda) -->
+    <section id="semilla" class="bloque ficha">
+      <div class="marco" id="semilla-marco"></div>
+      <div class="pie" id="semilla-pie"></div>
+    </section>
+
+    <section id="cosecha" class="bloque ficha">
+      <h2><svg viewBox="0 0 24 24" class="rama"></svg><span id="cosecha-titulo"></span></h2>
+      <div class="divisor"></div>
+      <p id="cosecha-txt"></p>
+    </section>
+
+    <!-- Derecha -->
+    <section id="cuidado" class="bloque ficha">
+      <h2><svg viewBox="0 0 24 24" class="rama"></svg><span id="cuidado-titulo"></span></h2>
+      <div class="divisor"></div>
+      <ul class="lista" id="cuidado-lista"></ul>
+    </section>
+
+    <!-- Flor (derecha) -->
+    <section id="flor" class="bloque ficha">
+      <div class="marco" id="flor-marco"></div>
+      <div class="pie" id="flor-pie"></div>
+    </section>
+
+    <section id="consumo" class="bloque ficha">
+      <h2><svg viewBox="0 0 24 24" class="rama"></svg><span id="consumo-titulo"></span></h2>
+      <div class="divisor"></div>
+      <p id="consumo-txt"></p>
+    </section>
+  </div>
+</div>
+
+
+<!-- Regreso al sitio web (aparece al abrir la interfaz desde el sitio) -->
+<a id="volver" href="index.html#interfaz">Volver a El almácigo</a>
+
+<!-- Aviso de sonido (clic para activar; tecla M para apagar o encender) -->
+<div id="avisoSonido" class="escondido" role="status" aria-live="polite">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+  <span id="avisoSonidoTexto">Haz clic para activar el sonido</span>
+</div>
+<!-- Panel de conexión con el Arduino (tecla C para mostrar u ocultar) -->
+<div id="serial" data-estado="desconectado" role="status" aria-live="polite">
+  <span class="luz" aria-hidden="true"></span>
+  <span class="textos"><b id="serialTitulo">Arduino no conectado</b><small id="serialDetalle">Pulsa Conectar y elige el puerto del Arduino.</small></span>
+  <button id="serialConectar">Conectar</button>
+  <button id="serialDesconectar" class="secundario" hidden>Desconectar</button>
+</div>
+
+<script>
+/* ================= PALETAS ================= */
+const PALETAS = {
+  reposo:  {fondo:"#050505", fondoLuz:"#1c1812", acento:"#d9c58c", brillo:"#fbf5e6", texto:"#ece6d8", texto2:"#a69f90",
+            acentoRgb:"217,197,140", brilloRgb:"240,220,170", profundoRgb:"60,50,30"},
+  brasa:   {fondo:"#0a0405", fondoLuz:"#33140f", acento:"#f2b48a", brillo:"#fff2e8", texto:"#f1e7df", texto2:"#b9a39a",
+            acentoRgb:"242,180,138", brilloRgb:"255,200,160", profundoRgb:"120,45,25"},
+  noche:   {fondo:"#03060d", fondoLuz:"#0d1d36", acento:"#9ec3e6", brillo:"#eef5ff", texto:"#e3e9f2", texto2:"#9aa8bd",
+            acentoRgb:"158,195,230", brilloRgb:"180,210,255", profundoRgb:"30,60,110"},
+  jade:    {fondo:"#020908", fondoLuz:"#0b2a26", acento:"#9fdcc4", brillo:"#effff8", texto:"#e2efea", texto2:"#97b0a8",
+            acentoRgb:"159,220,196", brilloRgb:"170,240,215", profundoRgb:"20,85,72"},
+  amatista:{fondo:"#07040c", fondoLuz:"#24123a", acento:"#c8b2ec", brillo:"#f7f1ff", texto:"#ebe6f3", texto2:"#a99fba",
+            acentoRgb:"200,178,236", brilloRgb:"215,190,255", profundoRgb:"72,36,115"}
+};
+
+/* ================= PLANTAS =================
+   El orden es el de los lectores: posición 0 = lector 1, 1 = lector 2, etc.
+   modelo: ruta al archivo .glb de la planta (déjalo vacío "" si aún no lo tienes).
+   sonido: audio propio de la planta (narración, ambiente…) que suena después de la activación. "" = ninguno. */
+const PLANTAS = [
+  { // Lector 1
+    id:"zanahoria", paleta:"brasa",
+    modelo:"modelos/zanahoria.glb",
+    sonido:"",
+    semilla:"modelos/semillas/s_zanahoria.glb",
+    flor:"imagenes/flores/f_zanahoria.glb",
+    nombre:"Zanahoria", cientifico:"Daucus carota subsp. sativus",
+    titulos:{cosecha:"Cosecha", cuidado:"Cuidado", consumo:"Usos"},
+    condiciones:[
+      {n:"Clima", v:"Templado\n15\u2060–\u206021\u00a0°C", ico:"clima"},
+      {n:"Suelo", v:"Suelto y arenoso", ico:"suelo"},
+      {n:"Riego", v:"Regular, sin encharcar", ico:"gota"}
+    ],
+    cosecha:"Entre 70 y 120 días después de la siembra, cuando la raíz asoma con 2 a 3\u00a0cm de grosor.",
+    cuidado:[
+      "Ralear las plántulas a unos 5\u00a0cm entre sí.",
+      "Mantener la tierra húmeda y sin malezas.",
+      "Cubrir con tierra la parte superior de la raíz."
+    ],
+    consumo:"Cruda o cocida, en ensaladas, jugos y guisos. Aporta betacaroteno y fibra."
+  },
+  { // Lector 2
+    id:"algodon", paleta:"noche",
+    modelo:"modelos/algodon.glb",
+    sonido:"",
+    semilla:"modelos/semillas/s_algodon.glb",
+    flor:"modelos/flores/f_algodon.glb",
+    nombre:"Algodón", cientifico:"Gossypium hirsutum",
+    titulos:{cosecha:"Cosecha", cuidado:"Cuidado", consumo:"Usos"},
+    condiciones:[
+      {n:"Clima", v:"Cálido\n21\u2060–\u206030\u00a0°C", ico:"clima"},
+      {n:"Suelo", v:"Profundo y bien drenado", ico:"suelo"},
+      {n:"Riego", v:"Moderado, menos al madurar", ico:"gota"}
+    ],
+    cosecha:"Entre 150 y 180 días después de la siembra, cuando las cápsulas se abren y muestran la fibra blanca.",
+    cuidado:[
+      "Sembrar a pleno sol, con buena separación.",
+      "Mantener la tierra sin malezas las primeras semanas.",
+      "Vigilar plagas como el picudo del algodonero."
+    ],
+    consumo:"Su fibra se usa en textiles. De la semilla se obtienen aceite comestible y harina para alimento animal."
+  },
+  { // Lector 3
+    id:"cilantro", paleta:"jade",
+    modelo:"modelos/cilantro.glb",
+    sonido:"",
+    semilla:"modelos/semillas/s_cilantro.glb",
+    flor:"modelos/flores/f_cilantro.glb",
+    nombre:"Cilantro", cientifico:"Coriandrum sativum",
+    titulos:{cosecha:"Cosecha", cuidado:"Cuidado", consumo:"Usos"},
+    condiciones:[
+      {n:"Clima", v:"Fresco\n15\u2060–\u206025\u00a0°C", ico:"clima"},
+      {n:"Suelo", v:"Suelto, fértil y drenado", ico:"suelo"},
+      {n:"Riego", v:"Frecuente, tierra húmeda", ico:"gota"}
+    ],
+    cosecha:"Entre 40 y 60 días después de la siembra para las hojas, y entre 90 y 120 días para las semillas, cuando se secan en la planta.",
+    cuidado:[
+      "Dar sombra parcial en clima cálido para que no florezca pronto.",
+      "Sembrar de forma escalonada cada 2 o 3 semanas.",
+      "Cortar primero las hojas exteriores."
+    ],
+    consumo:"Fresco, en salsas, sopas, guacamole y ceviche. Sus semillas secas, el coriandro, se usan como especia."
+  },
+  { // Lector 4
+    id:"sacha-inchi", paleta:"amatista",
+    modelo:"modelos/sacha-inchi.glb",
+    sonido:"",
+    semilla:"modelos/semillas/s_sacha-inchi.glb",
+    flor:"modelos/flores/sacha-inchi.glb",
+    nombre:"Sacha inchi", cientifico:"Plukenetia volubilis",
+    titulos:{cosecha:"Cosecha", cuidado:"Cuidado", consumo:"Usos"},
+    condiciones:[
+      {n:"Clima", v:"Cálido y húmedo\n20\u2060–\u206032\u00a0°C", ico:"clima"},
+      {n:"Suelo", v:"Ácido y bien drenado", ico:"suelo"},
+      {n:"Riego", v:"Constante, sin encharcar", ico:"gota"}
+    ],
+    cosecha:"A partir de los 7 u 8 meses después de la siembra, cuando los frutos en forma de estrella se secan y se vuelven pardos.",
+    cuidado:[
+      "Dar tutores o espalderas, porque es una planta trepadora.",
+      "Podar para formar la planta y dejarla aireada.",
+      "Mantener la base sin malezas."
+    ],
+    consumo:"Sus semillas se comen siempre tostadas, como snack o en harina. De ellas se extrae un aceite rico en omega 3."
+  }
+];
+
+/* ================= ICONOS ================= */
+const ICONOS = {
+  clima: '<circle cx="9" cy="9" r="3.5"/><path d="M9 2v1.5M2 9h1.5M4 4l1 1M14 4l-1 1M8 20h9a3.5 3.5 0 0 0 0-7 4.5 4.5 0 0 0-8.6 1.5A2.8 2.8 0 0 0 8 20z"/>',
+  suelo: '<path d="M3 16h18M5 19.5h14M12 16V9M12 11c0-3-2-5-5-5 0 3 2 5 5 5M12 9c0-3 2-5 5-5 0 3-2 5-5 5"/>',
+  gota:  '<path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z"/>'
+};
+const RAMA = '<path d="M3 21C8 16 12 10 21 3" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>' +
+  '<path d="M8 15c-3 0-4-2-4-4 2 0 4 1 4 4zM12 10.5c-1-3 0-5 2-6 1 2 0 4.5-2 6zM13 11c3-1 5 0 6 2-2 1-4.5 0-6-2z" fill="currentColor"/>' +
+  '<circle cx="21" cy="3" r="1.4" fill="var(--brillo)"/>';
+const VACIO = {
+  semilla:'<svg class="vacio" viewBox="0 0 24 24"><path d="M12 3c4 3 6 6.5 6 10a6 6 0 0 1-12 0c0-3.5 2-7 6-10z"/><path d="M12 8v11"/></svg>',
+  flor:'<svg class="vacio" viewBox="0 0 24 24"><circle cx="12" cy="10" r="2.2"/><path d="M12 7.8c0-3 3-3.6 3.6-1.6.6 2-1.6 3.1-3.6 3.8M14.2 10c3 0 3.6 3 1.6 3.6-2 .6-3.1-1.6-3.8-3.6M12 12.2c0 3-3 3.6-3.6 1.6-.6-2 1.6-3.1 3.6-3.8M9.8 10c-3 0-3.6-3-1.6-3.6 2-.6 3.1 1.6 3.8 3.6M12 12.2V21"/></svg>'
+};
+const HOJA = '<path d="M4 20C4 11 10 5 20 4c0 10-6 16-16 16z"/>';
+
+const $ = id => document.getElementById(id);
+document.querySelectorAll(".rama").forEach(s => s.innerHTML = RAMA);
+
+/* ================= DIBUJAR ================= */
+let paletaActual = PALETAS.reposo;
+
+function aplicarPaleta(nombre){
+  const p = PALETAS[nombre] || PALETAS.reposo, r = document.documentElement.style;
+  r.setProperty("--fondo", p.fondo);       r.setProperty("--fondo-luz", p.fondoLuz);
+  r.setProperty("--acento", p.acento);     r.setProperty("--brillo", p.brillo);
+  r.setProperty("--texto", p.texto);       r.setProperty("--texto-2", p.texto2);
+  r.setProperty("--acento-rgb", p.acentoRgb);
+  r.setProperty("--brillo-rgb", p.brilloRgb);
+  r.setProperty("--profundo-rgb", p.profundoRgb);
+  paletaActual = p;
+}
+
+function dibujarFicha(p){
+  $("nombre").textContent = p.nombre;
+  $("cientifico").textContent = p.cientifico;
+  $("condiciones").innerHTML = p.condiciones.map(c =>
+    `<div class="cond"><div class="circ"><svg viewBox="0 0 24 24">${ICONOS[c.ico] || ICONOS.gota}</svg></div>
+     <b>${c.n}</b><small>${c.v}</small></div>`).join("");
+  $("cosecha-titulo").textContent = p.titulos.cosecha;
+  $("cuidado-titulo").textContent = p.titulos.cuidado;
+  $("consumo-titulo").textContent = p.titulos.consumo;
+  $("cosecha-txt").textContent = p.cosecha;
+  $("cuidado-lista").innerHTML = p.cuidado.map(t =>
+    `<li><svg viewBox="0 0 24 24">${HOJA}</svg>${t}</li>`).join("");
+  $("consumo-txt").textContent = p.consumo;
+  const minus = p.nombre.charAt(0).toLowerCase() + p.nombre.slice(1);
+  mostrarRecuadro("semilla", p.semilla, "Semilla de " + minus);
+  mostrarRecuadro("flor", p.flor, "Flor de " + minus);
+  mostrarModelo(p.modelo);
+}
+
+/* ================= RECUADROS DE SEMILLA Y FLOR =================
+   Muestra una imagen o un modelo .glb. Si falta el archivo, queda el marco con un ícono. */
+function mostrarRecuadro(tipo, ruta, texto){
+  const marco = $(tipo + "-marco");
+  $(tipo + "-pie").textContent = texto;
+  if (marco.dataset.ruta === ruta) return;
+  marco.dataset.ruta = ruta || "";
+  if (!ruta) { marco.innerHTML = VACIO[tipo]; return; }
+  if (/\.glb$/i.test(ruta)) {
+    marco.innerHTML = `<model-viewer src="${ruta}" alt="${texto}" auto-rotate rotation-per-second="20deg"
+      auto-rotate-delay="0" interaction-prompt="none" disable-zoom disable-pan exposure="1.1" loading="eager"></model-viewer>`;
+    marco.firstElementChild.addEventListener("error", () => {
+      console.warn("[" + tipo + "] No se pudo cargar:", ruta);
+      marco.innerHTML = VACIO[tipo];
+    });
+  } else {
+    const img = new Image();
+    img.alt = texto;
+    img.onerror = () => { console.warn("[" + tipo + "] No se encontró:", ruta); marco.innerHTML = VACIO[tipo]; };
+    marco.innerHTML = "";
+    marco.appendChild(img);
+    img.src = ruta;
+  }
+}
+
+/* ================= MODELO 3D ================= */
+function mostrarModelo(ruta){
+  const v = $("visor");
+  if (!ruta) { v.classList.add("sin-modelo"); v.removeAttribute("src"); return; }
+  v.classList.remove("sin-modelo");
+  if (v.getAttribute("src") !== ruta) v.setAttribute("src", ruta);
+}
+// Si un archivo no existe o está dañado, se oculta el visor y se avisa en la consola
+$("visor").addEventListener("error", e => {
+  $("visor").classList.add("sin-modelo");
+  console.warn("[Modelo 3D] No se pudo cargar:", $("visor").getAttribute("src"),
+    "— revisa que el archivo exista en la carpeta modelos/ y sea .glb");
+});
+
+/* ================= SONIDOS =================*/
+const SONIDOS = {
+  activacion: "sonidos/activar.mp3",      // al poner una etiqueta (aparece una planta)
+  reposo:     "sonidos/reposo.mp3",      // al volver a reposo (se retiran las etiquetas)
+  volumen: 0.8,         // volumen de activación y reposo, de 0 a 1
+  volumenPlanta: 0.7,   // volumen del audio propio de cada planta, de 0 a 1
+  esperaPlanta: 0.6,    // segundos tras la activación antes de que empiece el audio de la planta
+  bucle: false,         // true = el audio de la planta se repite mientras esté visible
+
+  fondo: "sonidos/fondo.mp3",  // sonido ambiente que suena en bucle durante toda la experiencia
+  volumenFondo: 0.35,   // volumen del fondo, de 0 a 1
+  atenuarFondo: 0.4,    // mientras suena el audio de una planta, el fondo baja a este porcentaje (1 = no baja)
+  entradaFondo: 4       // segundos que tarda el fondo en aparecer con un desvanecido
+};
+
+const Sonido = (() => {
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  const ctx = Ctx ? new Ctx() : null;
+  const cache = {};          // ruta → promesa de AudioBuffer (o null si no se pudo cargar)
+  let silencio = false;
+  let fondoGain = null, fondoIniciado = false;
+  let pista = null, pistaTimer = null;
+  const aviso = $("avisoSonido"), avisoTexto = $("avisoSonidoTexto");
+
+  /* --- Carga de efectos cortos (quedan en memoria para sonar sin retraso) --- */
+  function cargar(ruta){
+    if (!ctx || !ruta) return Promise.resolve(null);
+    if (!cache[ruta]) {
+      cache[ruta] = fetch(ruta)
+        .then(r => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+        .then(b => ctx.decodeAudioData(b))
+        .catch(() => {
+          console.warn("[Sonido] No se encontró", ruta, "— se usará un tono de prueba.");
+          return null;
+        });
+    }
+    return cache[ruta];
+  }
+
+  async function efecto(ruta, tipo){
+    if (silencio || !ctx || !ruta) return;
+    if (ctx.state === "suspended") return;   // aún nadie ha hecho clic
+    const buf = await cargar(ruta);
+    const salida = ctx.createGain();
+    salida.gain.value = SONIDOS.volumen;
+    salida.connect(ctx.destination);
+    if (buf) {
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.connect(salida);
+      src.start();
+    } else {
+      tono(tipo, salida);
+    }
+  }
+
+  /* --- Tonos de prueba cuando falta el archivo --- */
+  function tono(tipo, salida){
+    const t = ctx.currentTime;
+    const notas = tipo === "reposo"
+      ? [[659.25, 0], [493.88, 0.16], [392.0, 0.32]]          // mi, si, sol: bajando
+      : [[783.99, 0], [1174.66, 0.09], [1567.98, 0.18]];      // sol, re, sol: subiendo, brillante
+    notas.forEach(([f, d]) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = "sine";
+      o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t + d);
+      g.gain.exponentialRampToValueAtTime(0.35, t + d + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + d + (tipo === "reposo" ? 0.9 : 0.7));
+      o.connect(g).connect(salida);
+      o.start(t + d);
+      o.stop(t + d + 1);
+    });
+  }
+
+  /* --- Sonido de fondo continuo --- */
+  function nivelFondo(valor, segundos){
+    if (!fondoGain) return;
+    const t = ctx.currentTime;
+    fondoGain.gain.cancelScheduledValues(t);
+    fondoGain.gain.setValueAtTime(fondoGain.gain.value, t);
+    fondoGain.gain.linearRampToValueAtTime(valor, t + segundos);
+  }
+  function nivelFondoNormal(segundos = 1.5){
+    nivelFondo(silencio ? 0 : SONIDOS.volumenFondo, segundos);
+  }
+
+  async function iniciarFondo(){
+    if (!ctx || fondoIniciado || !SONIDOS.fondo || ctx.state !== "running") return;
+    fondoIniciado = true;
+    fondoGain = ctx.createGain();
+    fondoGain.gain.value = 0;
+    fondoGain.connect(ctx.destination);
+
+    const buf = await cargar(SONIDOS.fondo);
+    if (buf) {
+      // AudioBufferSource con loop: se repite sin el corte que tiene <audio loop>
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.loop = true;
+      src.connect(fondoGain);
+      src.start();
+    } else {
+      ambienteDePrueba(fondoGain);
+    }
+    nivelFondo(silencio ? 0 : SONIDOS.volumenFondo, SONIDOS.entradaFondo);
+  }
+
+  /* Ambiente místico generado por el navegador (suena mientras no exista sonidos/fondo.mp3).
+     Está afinado en fa lidio, la misma tonalidad del sonido de activación
+     (sus notas principales son fa, la, do y mi), para que los dos empasten. */
+  function ambienteDePrueba(salida){
+    // Reverberación larga, tipo espacio abierto: lo que le da el aire místico
+    const reverb = ctx.createConvolver();
+    reverb.buffer = impulsoReverb(5.5);
+    const humedo = ctx.createGain();
+    humedo.gain.value = 0.9;
+    reverb.connect(humedo).connect(salida);
+
+    // --- Colchón: acorde abierto y luminoso (fa, do, sol, la, mi) ---
+    const filtro = ctx.createBiquadFilter();
+    filtro.type = "lowpass";
+    filtro.frequency.value = 2200;
+    filtro.Q.value = 0.4;
+    const seco = ctx.createGain();
+    seco.gain.value = 0.45;
+    filtro.connect(seco).connect(salida);
+    filtro.connect(reverb);
+
+    const lfo = ctx.createOscillator(), lfoGan = ctx.createGain();
+    lfo.frequency.value = 0.04;           // el brillo se abre y se cierra muy despacio
+    lfoGan.gain.value = 900;
+    lfo.connect(lfoGan).connect(filtro.frequency);
+    lfo.start();
+
+    const colchon = [
+      [87.31, 0.10],   // fa2: base suave, sin peso
+      [130.81, 0.07],  // do3
+      [196.0, 0.05],   // sol3: la novena, abre el acorde
+      [220.0, 0.06],   // la3
+      [329.63, 0.04],  // mi4: la séptima mayor, luminosa
+      [523.25, 0.018], // do5: brillo alto
+      [659.25, 0.012]  // mi5: brillo alto
+    ];
+    colchon.forEach(([f, vol], k) => {
+      [-7, 7].forEach(desafinar => {        // dos voces ligeramente desafinadas = coro suave
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = "sine";
+        o.frequency.value = f;
+        o.detune.value = desafinar;
+        g.gain.value = vol / 2;
+        const vlfo = ctx.createOscillator(), vgan = ctx.createGain();
+        vlfo.frequency.value = 0.025 + k * 0.013 + (desafinar > 0 ? 0.007 : 0);
+        vgan.gain.value = vol / 2 * 0.7;
+        vlfo.connect(vgan).connect(g.gain);
+        vlfo.start();
+        o.connect(g).connect(filtro);
+        o.start();
+      });
+    });
+
+    // --- Destellos: campanitas sueltas que aparecen al azar ---
+    const notasDestello = [698.46, 783.99, 880.0, 1046.5, 1318.51, 1396.91, 987.77];
+    //                     fa5     sol5    la5    do6     mi6      fa6      si5 (la nota lidia, más rara)
+    function destello(){
+      if (!fondoGain) return;
+      const r = Math.random();
+      const f = r > 0.88 ? notasDestello[6] : notasDestello[Math.floor(Math.random() * 6)];
+      const t = ctx.currentTime;
+      const pan = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.05, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 3.5);
+      // Campana: fundamental + parcial inarmónico
+      [[1, 1], [2.76, 0.25], [5.4, 0.08]].forEach(([mult, nivel]) => {
+        const o = ctx.createOscillator(), og = ctx.createGain();
+        o.type = "sine";
+        o.frequency.value = f * mult;
+        og.gain.value = nivel;
+        o.connect(og).connect(g);
+        o.start(t);
+        o.stop(t + 3.6);
+      });
+      if (pan) { pan.pan.value = Math.random() * 1.4 - 0.7; g.connect(pan); pan.connect(reverb); }
+      else g.connect(reverb);
+      const seco2 = ctx.createGain();
+      seco2.gain.value = 0.25;
+      g.connect(seco2).connect(salida);
+      setTimeout(destello, 2500 + Math.random() * 4500);
+    }
+    setTimeout(destello, 3000);
+  }
+
+  // Respuesta de impulso para la reverberación: ruido estéreo que se apaga poco a poco
+  function impulsoReverb(segundos){
+    const largo = Math.floor(ctx.sampleRate * segundos);
+    const buf = ctx.createBuffer(2, largo, ctx.sampleRate);
+    for (let c = 0; c < 2; c++) {
+      const d = buf.getChannelData(c);
+      for (let i = 0; i < largo; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / largo, 2.8);
+    }
+    return buf;
+  }
+
+  /* --- Audio propio de cada planta --- */
+  function pararPista(){
+    clearTimeout(pistaTimer);
+    if (!pista) return;
+    nivelFondoNormal(1.5);
+    const p = pista;
+    pista = null;
+    // Desvanecido corto para que no corte en seco
+    const paso = setInterval(() => {
+      p.volume = Math.max(0, p.volume - 0.08);
+      if (p.volume <= 0.01) { clearInterval(paso); p.pause(); }
+    }, 30);
+  }
+
+  function iniciarPista(ruta){
+    if (!ruta || silencio) return;
+    pistaTimer = setTimeout(() => {
+      const a = new Audio(ruta);
+      a.volume = SONIDOS.volumenPlanta;
+      a.loop = SONIDOS.bucle;
+      a.addEventListener("error", () => console.warn("[Sonido] No se pudo cargar", ruta));
+      a.addEventListener("ended", () => { if (pista === a) nivelFondoNormal(2); });
+      a.play().then(() => {
+        if (pista === a && !silencio) nivelFondo(SONIDOS.volumenFondo * SONIDOS.atenuarFondo, 1);
+      }).catch(() => {});
+      pista = a;
+    }, SONIDOS.esperaPlanta * 1000);
+  }
+
+  /* --- Se llama cada vez que cambia lo que se ve --- */
+  function cambio(indice){
+    pararPista();
+    if (indice < 0) {
+      efecto(SONIDOS.reposo, "reposo");
+    } else {
+      efecto(SONIDOS.activacion, "activacion");
+      iniciarPista(PLANTAS[indice].sonido);
+    }
+  }
+
+  /* --- Desbloqueo, aviso y tecla M --- */
+  function actualizarAviso(){
+    if (!ctx) return;
+    if (silencio) {
+      avisoTexto.textContent = "Sonido apagado. Pulsa M para encenderlo";
+      aviso.classList.remove("escondido");
+    } else if (ctx.state === "suspended") {
+      avisoTexto.textContent = "Haz clic para activar el sonido";
+      aviso.classList.remove("escondido");
+    } else {
+      aviso.classList.add("escondido");
+    }
+  }
+
+  function desbloquear(){
+    if (ctx && ctx.state === "suspended") ctx.resume().then(actualizarAviso);
+  }
+
+  function alternarSilencio(){
+    silencio = !silencio;
+    if (silencio) pararPista();
+    nivelFondoNormal(silencio ? 0.6 : 2);
+    actualizarAviso();
+  }
+
+  if (ctx) {
+    ["pointerdown", "keydown", "touchstart"].forEach(ev =>
+      addEventListener(ev, desbloquear, { passive: true }));
+    ctx.addEventListener("statechange", () => { actualizarAviso(); iniciarFondo(); });
+    cargar(SONIDOS.activacion);
+    cargar(SONIDOS.reposo);
+    cargar(SONIDOS.fondo);
+    iniciarFondo();   // si Chrome ya permite audio (por ejemplo con --autoplay-policy), arranca de una vez
+    setTimeout(actualizarAviso, 300);
+  }
+
+  return { cambio, alternarSilencio, desbloquear };
+})();
+
+/* ================= CAMBIO CON TRANSICIÓN ================= */
+let actual = -1;          // -1 = reposo
+let turno = 0;            // evita choques si llegan señales muy seguidas
+
+function cambiarA(indice){
+  if (indice === actual) return;
+  console.log("Indice activado " + indice);
+  actual = indice;
+  Sonido.cambio(indice);
+  const miTurno = ++turno;
+  $("contenido").classList.add("oculto");
+  setTimeout(() => {
+    if (miTurno !== turno) return;
+    if (indice < 0) {
+      aplicarPaleta("reposo");
+      document.body.classList.add("en-reposo");
+    } else {
+      const p = PLANTAS[indice];
+      aplicarPaleta(p.paleta);
+      dibujarFicha(p);
+      document.body.classList.remove("en-reposo");
+    }
+    $("contenido").classList.remove("oculto");
+    avisarSitio();
+  }, 450);
+}
+
+/* ================= LECTORES RFID =================
+   Cada lector muestra su planta mientras la etiqueta está puesta.
+   Si se retira, vuelve a la última planta que siga activa, o a reposo. */
+let activos = [];   // lectores con etiqueta, en orden de llegada
+
+function lector(n, estado){
+  const i = n - 1;
+  if (i < 0 || i >= PLANTAS.length) return;
+  activos = activos.filter(x => x !== i);
+  if (estado) activos.push(i);
+  cambiarA(activos.length ? activos[activos.length - 1] : -1);
+}
+
+/* ================= CONTROL DESDE TOUCHDESIGNER =================
+   op('webrender1').executeJavaScript("TD.senal(1)")           señal 1 del Arduino → planta 1
+   op('webrender1').executeJavaScript("TD.lector(1, true)")    etiqueta puesta en el lector 1
+   op('webrender1').executeJavaScript("TD.lector(1, false)")   etiqueta retirada del lector 1
+   (en JavaScript se escribe true/false en minúscula)
+*/
+/* ================= SEÑAL DEL ARDUINO =================
+   El Arduino envía 1, 2, 3 o 4 al leer una etiqueta, y puede repetirla mientras siga puesta.
+   Solo cuenta como lectura NUEVA si ese lector llevaba más de SEGUNDOS_REPETICION sin enviar.
+   Las repeticiones de una etiqueta que sigue en contacto se ignoran, así que la pantalla
+   muestra siempre la última etiqueta que se acercó.
+   SEGUNDOS_REPOSO: si pasa ese tiempo sin recibir ninguna señal, vuelve a reposo (0 = nunca). */
+const SEGUNDOS_REPOSO = 0;
+const SEGUNDOS_REPETICION = 1.5;   // debe ser mayor que el intervalo con que el Arduino repite la señal
+let temporizadorReposo = null;
+const ultimaSenal = {};            // lector → momento de su última señal (ms)
+
+function esLecturaNueva(n){
+  const ahora = performance.now();
+  const antes = ultimaSenal[n];
+  ultimaSenal[n] = ahora;
+  return antes === undefined || ahora - antes > SEGUNDOS_REPETICION * 1000;
+}
+
+window.TD = {
+  // Señal del Arduino: solo cambia de planta si es una lectura nueva
+  senal(n){
+    n = Number(n);
+    if (!(n >= 1 && n <= PLANTAS.length)) return;
+    if (esLecturaNueva(n)) TD.planta(n);
+    if (SEGUNDOS_REPOSO > 0) {
+      clearTimeout(temporizadorReposo);
+      temporizadorReposo = setTimeout(() => TD.reposo(), SEGUNDOS_REPOSO * 1000);
+    }
+  },
+  // Lector n (1–4) con etiqueta (true) o sin ella (false)
+  lector,
+  // Ir directo a una planta: por número (1–4) o por id ("cilantro")
+  planta(q){
+    const i = typeof q === "number" ? q - 1 : PLANTAS.findIndex(p => p.id === q);
+    activos = i >= 0 ? [i] : [];
+    cambiarA(i);
+  },
+  // Volver a reposo y olvidar todos los lectores
+  reposo(){
+    activos = [];
+    for (const k in ultimaSenal) delete ultimaSenal[k];
+    cambiarA(-1);
+  },
+  // Cambiar un dato de la planta visible: TD.set('nombre', 'Lavanda'), TD.set('cuidado.0', '...')
+  set(ruta, valor){
+    if (actual < 0) return;
+    const partes = ruta.split(".");
+    let obj = PLANTAS[actual];
+    for (let k = 0; k < partes.length - 1; k++) obj = obj[partes[k]];
+    obj[partes[partes.length - 1]] = valor;
+    dibujarFicha(PLANTAS[actual]);
+  },
+  // Secciones: encabezado, condiciones, visor (modelo 3D), cosecha, cuidado, consumo
+  ocultar(id){ $(id).style.visibility = "hidden"; },
+  mostrar(id){ $(id).style.visibility = "visible"; },
+  alternar(id){ const s = $(id); s.style.visibility = s.style.visibility === "hidden" ? "visible" : "hidden"; },
+  // Texto del mensaje de reposo
+  mensaje(titulo, sub){ $("reposo").querySelector("b").textContent = titulo;
+                        if (sub !== undefined) $("reposo").querySelector("small").textContent = sub; }
+};
+
+/* ================= ENTRADA COMÚN =================
+   1–4 = planta de ese lector, 0 = reposo.
+   directo = true (teclado): cambia siempre, sin filtrar repeticiones.
+   Sin directo (Arduino): pasa por TD.senal, que ignora las repeticiones. */
+function entrada(valor, directo){
+  const n = Number(valor);
+  if (n >= 1 && n <= 4) directo ? TD.planta(n) : TD.senal(n);
+  else if (n === 0) TD.reposo();
+}
+
+/* Prueba en el navegador: teclas 1–4 = planta, 0 = reposo */
+document.addEventListener("keydown", e => {
+  if (e.repeat) return;
+  if (/^[0-4]$/.test(e.key)) entrada(e.key, true);
+  if (e.key === "c" || e.key === "C") $("serial").classList.toggle("escondido");
+  if (e.key === "m" || e.key === "M") Sonido.alternarSilencio();
+});
+
+/* ================= ARDUINO POR WEB SERIAL =================
+   Lee lo que el Arduino envía con Serial.println(): 0, 1, 2, 3 o 4.
+   Requisitos: Chrome o Edge de escritorio, página en http://localhost o https://,
+   y el Monitor Serial del IDE de Arduino cerrado.
+   Después de autorizar el puerto una vez, al recargar la página se conecta sola. */
+const Serie = (() => {
+  const BAUDIOS = 115200;
+  const panel = $("serial"), titulo = $("serialTitulo"), detalle = $("serialDetalle");
+  const btnCon = $("serialConectar"), btnDes = $("serialDesconectar");
+  let puerto = null, lectorStream = null, tuberia = null, manual = false, ocultarTimer = null;
+
+  function estado(e, t, d){
+    panel.dataset.estado = e;
+    titulo.textContent = t;
+    detalle.textContent = d || "";
+    const activo = e === "conectado" || e === "conectando";
+    btnCon.hidden = activo;
+    btnDes.hidden = !activo;
+    btnCon.disabled = e === "incompatible";
+    clearTimeout(ocultarTimer);
+    panel.classList.remove("escondido");
+    if (e === "conectado") ocultarTimer = setTimeout(() => panel.classList.add("escondido"), 4000);
+  }
+
+  async function abrir(p){
+    manual = false;
+    estado("conectando", "Conectando…", "El Arduino se reinicia al abrir el puerto; tarda unos 2 segundos.");
+    try {
+      await p.open({ baudRate: BAUDIOS });
+    } catch (e) {
+      if (e.name === "InvalidStateError") { /* ya estaba abierto */ }
+      else {
+        estado("error", "Puerto ocupado o no disponible",
+          "Cierra el Monitor Serial del IDE de Arduino u otra pestaña que lo use, y vuelve a conectar.");
+        console.warn("[Arduino]", e);
+        return;
+      }
+    }
+    puerto = p;
+    setTimeout(() => {
+      if (puerto === p && panel.dataset.estado === "conectando")
+        estado("conectado", "Arduino conectado", "Acerca una etiqueta a un lector. Tecla C para mostrar u ocultar este aviso.");
+    }, 2200);
+    leer(p);
+  }
+
+  async function leer(p){
+    let buffer = "";
+    while (puerto === p && p.readable && !manual) {
+      const dec = new TextDecoderStream();
+      tuberia = p.readable.pipeTo(dec.writable).catch(() => {});
+      lectorStream = dec.readable.getReader();
+      try {
+        while (true) {
+          const { value, done } = await lectorStream.read();
+          if (done) break;
+          buffer += value;
+          const lineas = buffer.split(/\r?\n/);
+          buffer = lineas.pop();
+          for (const l of lineas) {
+            const v = l.trim();
+            if (!v) continue;
+            if (/^[0-4]$/.test(v)) {
+              if (panel.dataset.estado === "conectando")
+                estado("conectado", "Arduino conectado", "Tecla C para mostrar u ocultar este aviso.");
+              entrada(v);   // sin "directo": las repeticiones se filtran
+            } else {
+              console.log("[Arduino] mensaje:", v);
+            }
+          }
+        }
+      } catch (e) {
+        if (!manual) console.warn("[Arduino] lectura:", e);
+      } finally {
+        lectorStream.releaseLock();
+      }
+    }
+  }
+
+  async function cerrar(porUsuario){
+    manual = porUsuario;
+    const p = puerto;
+    puerto = null;
+    try { if (lectorStream) await lectorStream.cancel(); } catch (e) {}
+    try { if (tuberia) await tuberia; } catch (e) {}
+    try { if (p) await p.close(); } catch (e) {}
+    lectorStream = null;
+  }
+
+  btnCon.addEventListener("click", async () => {
+    try {
+      const p = await navigator.serial.requestPort();
+      await abrir(p);
+    } catch (e) {
+      if (e.name === "NotFoundError")
+        estado("desconectado", "Arduino no conectado", "No elegiste ningún puerto. Pulsa Conectar y selecciona el Arduino.");
+      else estado("error", "No se pudo conectar", e.message);
+    }
+  });
+
+  btnDes.addEventListener("click", async () => {
+    await cerrar(true);
+    estado("desconectado", "Arduino desconectado", "Pulsa Conectar para volver a leer los lectores.");
+  });
+
+  function iniciar(){
+    if (!window.isSecureContext) {
+      estado("incompatible", "Abre la página desde localhost",
+        "Web Serial no funciona con file://. Usa por ejemplo python -m http.server y entra a http://localhost:8000.");
+      return;
+    }
+    if (!("serial" in navigator)) {
+      estado("incompatible", "Este navegador no lee el Arduino",
+        "Usa Chrome o Edge de escritorio. Mientras tanto puedes probar con las teclas 0 a 4.");
+      return;
+    }
+    navigator.serial.addEventListener("disconnect", async e => {
+      if (e.target !== puerto) return;
+      await cerrar(false);
+      estado("error", "Se desconectó el cable USB", "Vuelve a enchufar el Arduino; se reconectará solo.");
+    });
+    navigator.serial.addEventListener("connect", e => {
+      if (!puerto) setTimeout(() => abrir(e.target), 500);
+    });
+    // Reconexión automática a un puerto ya autorizado
+    navigator.serial.getPorts().then(ps => { if (ps.length) abrir(ps[0]); });
+  }
+
+  return { iniciar, abrir, cerrar };
+})();
+Serie.iniciar();
+
+/* ================= ADORNOS DEL CÍRCULO ================= */
+(function(){
+  const estrella = (x, y, t) =>
+    `<path class="destello" d="M${x} ${y-t}Q${x} ${y} ${x+t} ${y}Q${x} ${y} ${x} ${y+t}Q${x} ${y} ${x-t} ${y}Q${x} ${y} ${x} ${y-t}z"/>`;
+  let s = "";
+  for (let ang = 0; ang < 360; ang += 45) {
+    const a = ang * Math.PI / 180, x = 450 + 440 * Math.cos(a), y = 450 + 440 * Math.sin(a);
+    s += ang % 90 === 0 ? estrella(x, y, 13) : `<circle cx="${x}" cy="${y}" r="3.5" fill="#d9c58c"/>`;
+  }
+  $("adornos").innerHTML = s;
+})();
+
+/* ================= LUCIÉRNAGAS ================= */
+(function(){
+  const cv = $("luciernagas"), ctx = cv.getContext("2d");
+  cv.width = 1920; cv.height = 1080;
+  const nueva = (y) => ({
+    x: Math.random() * 1920, y: y ?? Math.random() * 1080,
+    r: Math.random() * 1.8 + .6, vy: -(Math.random() * .35 + .08),
+    f: Math.random() * Math.PI * 2, vf: Math.random() * .03 + .01,
+    dorada: Math.random() >= .7
+  });
+  const bichos = Array.from({length: 90}, () => nueva());
+  const quieto = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  (function dibujar(){
+    ctx.clearRect(0, 0, 1920, 1080);
+    const claro = paletaActual.brilloRgb;
+    bichos.forEach((b, i) => {
+      b.f += b.vf; b.y += b.vy; b.x += Math.sin(b.f) * .3;
+      if (b.y < -10) bichos[i] = nueva(1090);
+      const a = .25 + .6 * Math.abs(Math.sin(b.f));
+      const tono = b.dorada ? "217,197,140" : claro;
+      ctx.shadowBlur = 12; ctx.shadowColor = `rgba(${tono},${a})`;
+      ctx.fillStyle = `rgba(${tono},${a})`;
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 7); ctx.fill();
+    });
+    if (!quieto) requestAnimationFrame(dibujar);
+  })();
+})();
+
+/* ================= ESCALADO ================= */
+function escalar(){
+  const w = innerWidth || document.documentElement.clientWidth || 1920;
+  const h = innerHeight || document.documentElement.clientHeight || 1080;
+  $("escenario").style.setProperty("--k", Math.min(w/1920, h/1080));
+}
+addEventListener("resize", escalar);
+addEventListener("load", escalar);
+setTimeout(escalar, 300);
+
+/* ================= CONEXIÓN CON EL SITIO WEB =================
+   El sitio (index.html) muestra esta interfaz dentro de un recuadro y le envía mensajes:
+     {almacigo:"planta", valor:"cilantro"}  o  {almacigo:"planta", valor:0} para reposo.
+   La interfaz responde con la planta visible, para que el sitio marque el botón correcto. */
+function avisarSitio(){
+  if (window.parent === window) return;
+  window.parent.postMessage({almacigo:"cambio", id: actual >= 0 ? PLANTAS[actual].id : null}, "*");
+}
+addEventListener("message", e => {
+  const d = e.data;
+  if (!d || d.almacigo !== "planta") return;
+  if (d.valor === 0 || d.valor === null) TD.reposo();
+  else TD.planta(d.valor);
+});
+
+/* ================= INICIO =================
+   #volver        → muestra el enlace para regresar al sitio web
+   #incrustado    → oculta los avisos de Arduino y sonido (se usa dentro del sitio)
+   #transparente  → sin fondo, para componer en TouchDesigner
+   #cilantro      → arranca mostrando esa planta (útil para probar)
+   Se pueden combinar: #transparente,cilantro */
+const opciones = location.hash.replace("#", "").split(",");
+if (opciones.includes("transparente")) document.body.classList.add("transparente");
+if (opciones.includes("volver")) document.body.classList.add("con-volver");
+if (opciones.includes("incrustado")) document.body.classList.add("incrustado");
+aplicarPaleta("reposo");
+escalar();
+const inicial = PLANTAS.findIndex(p => opciones.includes(p.id));
+if (inicial >= 0) TD.planta(inicial + 1);
+avisarSitio();
+</script>
+</body>
+</html>

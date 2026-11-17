@@ -1,0 +1,10 @@
+IMÁGENES DE EL ALMÁCIGO
+
+sitio/      Imágenes del sitio web (index.html). Añade aquí tu foto como autora.jpg.
+semillas/   Una imagen por planta para el recuadro izquierdo de la interfaz:
+              zanahoria.png, algodon.png, cilantro.png, sacha-inchi.png
+flores/     Una imagen por planta para el recuadro derecho:
+              zanahoria.png, algodon.png, cilantro.png, sacha-inchi.png
+
+Se ven mejor en PNG con fondo transparente. También puedes usar un modelo 3D (.glb):
+cambia la ruta en PLANTAS, dentro de interfaz-plantas.html (campos semilla y flor).

@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>El almácigo · Repositorio vivo de semillas nativas</title>
+<meta name="description" content="El almácigo: un repositorio mágico e interactivo con modelos 3D de las plantas que guardan los custodios de semillas nativas.">
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lily+Script+One&family=Rochester&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     EL ALMÁCIGO · Repositorio mágico y tecnológico
+     Tipografías (las mismas de la interfaz):
+       Lily Script One  → el nombre del proyecto y de las plantas
+       Rochester        → títulos y frases cortas
+       Poppins          → textos, botones y etiquetas
+     Colores: negro de noche, verde musgo y oro viejo.
+     ============================================================ */
+  /* Tipografía del estudio: "Hanging", la de Canva.
+     Guarda el archivo de la fuente en fuentes/ (hanging.woff2, hanging.otf o hanging.ttf).
+     Mientras no esté, el nombre del estudio se ve en Lily Script One. */
+  @font-face{font-family:"Hanging";font-display:swap;
+    src:local("Hanging"),local("Hanging Regular"),
+        url("fuentes/hanging.woff2") format("woff2"),url("fuentes/hanging.otf") format("opentype"),url("fuentes/hanging.ttf") format("truetype")}
+  :root{
+    color-scheme:dark;
+    --noche:#050504;
+    --musgo:#171b11;
+    --musgo-2:#1f2517;
+    --musgo-luz:#2c3420;
+    --oro:#d4b46a;
+    --oro-rgb:212,180,106;
+    --oro-claro:#f3dfa4;
+    --oro-hondo:#8a6a2f;
+    --pergamino:#e9e1c8;
+    --tinta:#26281a;
+    --brillo:#fbf3df;
+    --texto:#e6dec8;
+    --texto-2:#b5ad97;
+    --dorado:linear-gradient(135deg,#7d5f27 0%,#e9cf86 28%,#fff1c2 42%,#b8913f 62%,#f0d791 82%,#8a6a2f 100%);
+    --nombre:"Lily Script One",Georgia,cursive;
+    --script:"Rochester",Georgia,cursive;
+    --fuente:"Poppins","Segoe UI",Arial,sans-serif;
+    --ancho:1200px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;scroll-padding-top:calc(84px + env(safe-area-inset-top,0px))}
+  body{background:var(--noche);color:var(--texto);font-family:var(--fuente);font-size:18px;font-weight:400;
+       line-height:1.7;overflow-x:hidden;padding-bottom:env(safe-area-inset-bottom,0px)}
+  img{max-width:100%;display:block}
+  a{color:inherit}
+  :focus-visible{outline:2px solid var(--oro-claro);outline-offset:4px;border-radius:2px}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}}
+
+  #luciernagas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
+  main,header,footer{position:relative}
+  .contenedor{width:min(var(--ancho),100% - 48px);margin-inline:auto}
+  section{padding:130px 0;position:relative}
+  .centro{text-align:center}
+
+  /* ===== Paneles verde musgo con borde superior en arco y follaje tenue ===== */
+  .panel{background-color:var(--musgo);
+    background-image:
+      radial-gradient(ellipse 60% 50% at 50% 0%,rgba(var(--oro-rgb),.08),transparent 70%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cg fill='none' stroke='%23d4b46a' stroke-opacity='.07' stroke-width='1'%3E%3Cpath d='M70 120C70 90 70 60 70 20M70 95c-14-4-22-14-22-26 12 2 20 12 22 26zM70 70c14-4 22-14 22-26-12 2-20 12-22 26zM70 45c-10-3-16-10-16-19 9 1 15 8 16 19z'/%3E%3Ccircle cx='70' cy='16' r='3'/%3E%3Cpath d='M0 0l6 6M140 0l-6 6M0 140l6-6M140 140l-6-6'/%3E%3C/g%3E%3C/svg%3E");
+    border-radius:50% 50% 0 0/90px 90px 0 0;
+    box-shadow:0 -1px 0 rgba(var(--oro-rgb),.25)}
+  .panel + section:not(.panel){border-radius:50% 50% 0 0/90px 90px 0 0;background:var(--noche);margin-top:-90px;
+    box-shadow:0 -1px 0 rgba(var(--oro-rgb),.25)}
+  section + .panel{margin-top:-90px}
+
+  /* ===== Títulos: capitular en Rochester + resto en versalitas antiguas ===== */
+  .antetitulo{font-size:1rem;font-weight:300;font-style:italic;letter-spacing:.04em;line-height:1.3;color:var(--oro);margin-bottom:8px}
+  .titulo{font-family:var(--script);font-weight:400;font-size:clamp(3rem,6vw,4.6rem);line-height:1.05;
+          letter-spacing:.02em;color:var(--brillo);
+          text-shadow:0 0 24px rgba(var(--oro-rgb),.25)}
+  .floreo{display:block;width:260px;height:26px;margin:22px auto 40px;color:var(--oro)}
+  .izq .floreo{margin-left:0}
+  .lead{font-size:1.15rem;line-height:1.65;max-width:36em}
+  .centro .lead{margin-inline:auto}
+  p + p{margin-top:1em}
+  .tenue{color:var(--texto-2)}
+
+  /* ===== Botones con remates de rombo, como placas antiguas ===== */
+  .boton{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:12px;
+         font-family:var(--fuente);font-size:.9rem;font-weight:500;letter-spacing:.04em;
+         padding:14px 32px;text-decoration:none;cursor:pointer;color:var(--brillo);
+         border:1px solid rgba(var(--oro-rgb),.55);background:rgba(5,5,4,.35);transition:background .3s,box-shadow .3s,color .3s}
+  .boton::before,.boton::after{content:"";position:absolute;top:50%;width:7px;height:7px;background:var(--oro);
+         transform:translateY(-50%) rotate(45deg)}
+  .boton::before{left:-4px}.boton::after{right:-4px}
+  .boton:hover{background:rgba(var(--oro-rgb),.12);box-shadow:0 0 22px rgba(var(--oro-rgb),.25)}
+  .boton.dorado{background:var(--dorado);color:#1a1508;border-color:transparent}
+  .boton.dorado:hover{box-shadow:0 0 28px rgba(var(--oro-rgb),.55)}
+  .acciones{display:flex;flex-wrap:wrap;gap:22px}
+  .centro .acciones{justify-content:center}
+
+  /* ===== Marco dorado (borde con degradado de oro + línea interior + esquinas) ===== */
+  .dorado-marco{position:relative;border:3px solid transparent;
+    background:linear-gradient(var(--fondo-marco,#0a0a08),var(--fondo-marco,#0a0a08)) padding-box,var(--dorado) border-box;
+    box-shadow:0 0 0 1px rgba(0,0,0,.6),0 30px 60px rgba(0,0,0,.55),0 0 50px rgba(var(--oro-rgb),.12)}
+  .dorado-marco::after{content:"";position:absolute;inset:8px;border:1px solid rgba(var(--oro-rgb),.45);pointer-events:none;z-index:2}
+  .esq{position:absolute;width:58px;height:58px;color:var(--oro);z-index:3;pointer-events:none;
+       filter:drop-shadow(0 0 4px rgba(var(--oro-rgb),.35))}
+  .esq svg,.remate,.floreo{display:block}
+  .esq svg{width:100%;height:100%}
+  .esq.a{top:-14px;left:-14px}
+  .esq.b{top:-14px;right:-14px;transform:scaleX(-1)}
+  .esq.c{bottom:-14px;left:-14px;transform:scaleY(-1)}
+  .esq.d{bottom:-14px;right:-14px;transform:scale(-1,-1)}
+
+  /* ===== Camafeo: marco ovalado dorado con perlas ===== */
+  .camafeo{position:relative;aspect-ratio:300/380;width:100%}
+  .camafeo .ventana{position:absolute;inset:7.5% 8.5%;border-radius:50%;overflow:hidden;
+                    background:radial-gradient(circle at 50% 40%,var(--luz-c,#2a2a1c),#060605 75%)}
+  .camafeo .ventana img{width:100%;height:100%;object-fit:cover}
+  .camafeo .ventana img.recorte{object-fit:contain;padding:16%;filter:drop-shadow(0 10px 20px rgba(0,0,0,.6))}
+  .camafeo svg.aro-oval{position:absolute;inset:0;width:100%;height:100%;overflow:visible;
+                        filter:drop-shadow(0 12px 24px rgba(0,0,0,.6)) drop-shadow(0 0 12px rgba(var(--oro-rgb),.2))}
+
+  /* ===== Navegación ===== */
+  header{position:sticky;top:0;z-index:20;padding-top:env(safe-area-inset-top,0px);
+         background:linear-gradient(rgba(5,5,4,.94),rgba(5,5,4,.78));
+         backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+         border-bottom:1px solid rgba(var(--oro-rgb),.18)}
+  body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--noche)}
+  nav{display:flex;align-items:center;justify-content:space-between;gap:24px;height:78px}
+  .marca{font-family:var(--nombre);font-size:1.75rem;color:var(--brillo);text-decoration:none;
+         text-shadow:0 0 16px rgba(var(--oro-rgb),.45);white-space:nowrap}
+  .enlaces{display:flex;align-items:center;gap:34px;list-style:none}
+  .enlaces a{text-decoration:none;font-size:.95rem;font-weight:400;
+             color:var(--texto-2);transition:color .2s}
+  .enlaces a:hover,.enlaces a.activo{color:var(--oro-claro)}
+  .enlaces .boton{padding:10px 22px;color:#1a1508;font-size:.9rem}
+  #menu{display:none;background:none;border:1px solid rgba(var(--oro-rgb),.5);color:var(--texto);
+        font-family:var(--fuente);font-size:.95rem;padding:8px 18px;cursor:pointer}
+  @media (max-width:900px){
+    #menu{display:block}
+    .enlaces{position:absolute;top:100%;left:0;right:0;flex-direction:column;align-items:flex-start;gap:0;
+             padding:8px 24px 28px;background:rgba(5,5,4,.98);border-bottom:1px solid rgba(var(--oro-rgb),.2);display:none}
+    .enlaces.abierto{display:flex}
+    .enlaces li{width:100%}
+    .enlaces a{display:block;padding:15px 0;font-size:1rem}
+    .enlaces .boton{display:inline-flex;margin-top:14px}
+  }
+
+  /* ===== Portada: astrolabio ===== */
+  #portada{padding:40px 0 170px;overflow:hidden;
+           background:radial-gradient(ellipse 50% 45% at 50% 42%,rgba(110,60,25,.28),transparent 70%),
+                      radial-gradient(ellipse 80% 60% at 50% 110%,rgba(44,52,32,.7),transparent 70%)}
+  .astrolabio{position:relative;width:min(640px,92vw);aspect-ratio:1;margin:0 auto}
+  .astrolabio svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+  .astrolabio .giro{transform-origin:450px 450px;animation:giro 240s linear infinite}
+  .astrolabio .giro-inv{transform-origin:450px 450px;animation:giro 360s linear infinite reverse}
+  .astrolabio .destello{fill:var(--brillo);animation:titila 4s ease-in-out infinite}
+  .astrolabio .rotulo{font-family:var(--fuente);font-size:13px;font-weight:400;letter-spacing:.3em;fill:var(--oro)}
+  .astrolabio img{position:absolute;left:17%;top:20%;width:66%;
+                  filter:drop-shadow(0 24px 40px rgba(0,0,0,.7)) drop-shadow(0 0 30px rgba(var(--oro-rgb),.12));
+                  -webkit-mask-image:linear-gradient(transparent 0%,#000 24%);mask-image:linear-gradient(transparent 0%,#000 24%)}
+  .portada-texto{position:relative;text-align:center;margin-top:-70px;z-index:2}
+  .portada-texto .antetitulo{font-family:var(--script);font-style:normal;font-weight:400;letter-spacing:.02em;
+                             font-size:clamp(1.9rem,3.4vw,2.6rem)}
+  h1{font-family:var(--nombre);font-weight:400;font-size:clamp(4.4rem,12vw,9.6rem);line-height:.95;color:var(--brillo);
+     text-shadow:0 0 30px rgba(var(--oro-rgb),.55),0 0 80px rgba(var(--oro-rgb),.25);margin-bottom:12px}
+  .portada-texto .lead{margin:0 auto 46px;text-align:center}
+  .portada-texto .acciones{justify-content:center}
+  @keyframes giro{to{transform:rotate(360deg)}}
+  @keyframes titila{50%{opacity:.3}}
+  /* Un solo momento de entrada */
+  .astrolabio .trazo{stroke-dasharray:2765;stroke-dashoffset:2765;animation:dibujar 2.6s ease-out .2s forwards}
+  .astrolabio img,.astrolabio .aparece{opacity:0;animation:aparecer 1.6s ease-out 1.2s forwards}
+  .portada-texto{opacity:0;animation:aparecer 1.4s ease-out .6s forwards}
+  @keyframes dibujar{to{stroke-dashoffset:0}}
+  @keyframes aparecer{to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){.astrolabio .trazo{stroke-dashoffset:0}.astrolabio img,.astrolabio .aparece,.portada-texto{opacity:1}}
+
+  /* Cinta de palabras */
+  .cinta{display:flex;justify-content:center;flex-wrap:wrap;gap:10px 28px;margin-top:80px;
+         font-family:var(--script);font-size:clamp(1.8rem,3vw,2.5rem);letter-spacing:.04em;color:var(--texto-2)}
+  .cinta span{display:inline-flex;align-items:center;gap:28px}
+  .cinta span + span::before{content:"✦";font-size:.6em;color:var(--oro);letter-spacing:0}
+
+  /* ===== El problema ===== */
+  .dos{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+  .cita-grande{font-family:var(--script);font-weight:400;font-size:clamp(2rem,3.6vw,2.8rem);
+               line-height:1.18;color:var(--brillo);margin-bottom:22px}
+  .puntos{list-style:none;margin-top:20px}
+  .puntos li{position:relative;padding-left:34px;margin-bottom:14px}
+  .puntos li::before{content:"";position:absolute;left:4px;top:.62em;width:8px;height:8px;background:var(--oro);transform:rotate(45deg)}
+  .flotante{max-width:460px;justify-self:center;filter:drop-shadow(0 30px 40px rgba(0,0,0,.6)) drop-shadow(0 0 40px rgba(var(--oro-rgb),.1))}
+
+  /* Placa de la cifra */
+  .placa{--fondo-marco:#0b0d08;margin:120px auto 0;max-width:880px;padding:56px 64px;
+         display:grid;grid-template-columns:auto 1fr;gap:48px;align-items:center}
+  .placa b{font-family:var(--nombre);font-weight:400;font-size:clamp(4.6rem,11vw,8rem);line-height:1;
+           background:var(--dorado);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+           filter:drop-shadow(0 0 18px rgba(var(--oro-rgb),.35))}
+  .fuente{font-size:.88rem;font-weight:300;font-style:italic;color:var(--texto-2);margin-top:12px}
+
+  /* Línea de tiempo con tres camafeos */
+  .linea{margin-top:140px}
+  .anios{list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:56px;margin-top:10px}
+  .anio{text-align:center}
+  .simbolo{width:150px;height:150px;margin:0 auto 26px;color:var(--oro-claro);
+           filter:drop-shadow(0 0 14px rgba(var(--oro-rgb),.45))}
+  .simbolo .resplandor{fill:rgba(var(--oro-rgb),.10)}
+  .anio .ano{display:block;font-family:var(--script);font-weight:400;font-size:2.8rem;line-height:1;
+             color:var(--oro-claro);margin-bottom:10px}
+  .anio p{font-size:1rem;max-width:21em;margin-inline:auto}
+
+  /* ===== Cita de la custodia: lámina de pergamino ===== */
+  .lamina-cita{display:grid;grid-template-columns:300px minmax(0,1fr);gap:70px;align-items:center;max-width:1040px;margin:0 auto}
+  .pergamino{position:relative;padding:64px 64px 52px;color:var(--tinta);text-align:center;
+     background:
+       radial-gradient(ellipse at 30% 20%,rgba(255,255,255,.35),transparent 60%),
+       radial-gradient(ellipse at 80% 90%,rgba(120,100,50,.18),transparent 60%),
+       var(--pergamino);
+     box-shadow:inset 0 0 0 12px var(--pergamino),inset 0 0 0 13px #6f6a45,inset 0 0 0 17px var(--pergamino),inset 0 0 0 18px #6f6a45,
+                0 40px 70px rgba(0,0,0,.6)}
+  .pergamino .esq{color:#5f5b39;filter:none;width:64px;height:64px}
+  .pergamino .esq.a{top:4px;left:4px}.pergamino .esq.b{top:4px;right:4px}
+  .pergamino .esq.c{bottom:4px;left:4px}.pergamino .esq.d{bottom:4px;right:4px}
+  .pergamino .comillas{font-family:var(--nombre);font-size:5rem;line-height:.4;color:#7a6a33;display:block;margin-bottom:10px}
+  .pergamino p{font-family:var(--fuente);font-weight:400;font-style:italic;font-size:clamp(1.1rem,1.8vw,1.3rem);line-height:1.6}
+  .pergamino footer{margin-top:26px;font-size:1rem;font-weight:500;color:#3a3a24}
+  .pergamino footer span{display:block;font-weight:300;font-style:italic;font-size:.92rem;margin-top:2px}
+
+  /* ===== La propuesta ===== */
+  .etapas{list-style:none;margin-top:40px}
+  .etapas li{display:grid;grid-template-columns:170px 1fr;gap:24px;align-items:baseline;padding:22px 0;
+             border-top:1px solid rgba(var(--oro-rgb),.2)}
+  .etapas li:last-child{border-bottom:1px solid rgba(var(--oro-rgb),.2)}
+  .etapas b{font-family:var(--script);font-weight:400;font-size:2.3rem;line-height:1;color:var(--oro-claro)}
+
+  /* ===== La interfaz: el espejo mágico ===== */
+  .espejo-zona{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:70px;align-items:center}
+  .espejo{--fondo-marco:#000;aspect-ratio:16/9;padding:14px}
+  .espejo iframe{width:100%;height:100%;border:0;display:block;background:#000}
+  .chips{display:flex;flex-wrap:wrap;gap:12px;margin:30px 0 22px}
+  .chip{font-family:var(--fuente);font-size:.95rem;font-weight:400;cursor:pointer;padding:9px 20px;
+        background:transparent;color:var(--texto);border:1px solid rgba(var(--oro-rgb),.4);border-radius:999px;
+        transition:background .25s,border-color .25s,color .25s,box-shadow .25s}
+  .chip:hover{border-color:var(--c,var(--oro))}
+  .chip[aria-pressed="true"]{background:var(--c,var(--oro));border-color:var(--c,var(--oro));color:#14110a;
+        box-shadow:0 0 20px var(--c,var(--oro))}
+  .nota{font-size:.92rem;font-weight:300;font-style:italic;color:var(--texto-2)}
+  .enlace{color:var(--oro-claro);text-decoration:none;font-weight:500;font-size:.98rem;
+          border-bottom:1px solid rgba(var(--oro-rgb),.5);padding-bottom:3px}
+  .enlace:hover{border-bottom-color:var(--oro-claro)}
+
+  /* ===== Las plantas: láminas en arco ===== */
+  .plantas{display:grid;grid-template-columns:repeat(4,1fr);gap:34px;margin-top:20px}
+  .planta{position:relative;display:flex;flex-direction:column;text-decoration:none;color:var(--texto);text-align:center}
+  .arco{position:relative;aspect-ratio:3/4;border:2px solid transparent;border-radius:50% 50% 6px 6px/37.5% 37.5% 6px 6px;
+        background:radial-gradient(ellipse 80% 60% at 50% 42%,var(--luz),var(--hondo) 80%) padding-box,var(--dorado) border-box;
+        box-shadow:0 30px 50px rgba(0,0,0,.55),0 0 0 rgba(var(--c-rgb),0);transition:box-shadow .4s;
+        display:grid;place-items:center;overflow:hidden}
+  .arco::after{content:"";position:absolute;inset:9px;border:1px solid rgba(var(--oro-rgb),.45);
+               border-radius:50% 50% 3px 3px/37% 37% 3px 3px;pointer-events:none}
+  .planta:hover .arco{box-shadow:0 30px 50px rgba(0,0,0,.55),0 0 46px rgba(var(--c-rgb),.35)}
+  .arco img{max-width:78%;max-height:72%;object-fit:contain;filter:drop-shadow(0 0 22px rgba(var(--c-rgb),.35))}
+  .arco model-viewer{position:absolute;inset:12% 6% 6%;width:88%;height:82%;background:transparent;
+                     --poster-color:transparent;--progress-bar-height:0px;pointer-events:none;
+                     filter:drop-shadow(0 0 22px rgba(var(--c-rgb),.4))}
+  .arco .inicial{font-family:var(--nombre);font-size:6.5rem;line-height:1;color:var(--brillo-p);
+                 text-shadow:0 0 30px rgba(var(--c-rgb),.75),0 0 70px rgba(var(--c-rgb),.35)}
+  .arco .orb{position:absolute;inset:16% 14% auto;aspect-ratio:1;border-radius:50%;
+             border:1px dashed rgba(var(--c-rgb),.35);animation:giro 120s linear infinite}
+  .remate{position:absolute;top:-17px;left:50%;transform:translateX(-50%);width:26px;height:26px;z-index:2;color:var(--oro);
+          filter:drop-shadow(0 0 6px rgba(var(--oro-rgb),.6))}
+  .ficha{margin-top:24px}
+  .ficha h3{font-family:var(--nombre);font-weight:400;font-size:2.2rem;line-height:1.1;margin:6px 0 2px;color:var(--brillo-p);
+            text-shadow:0 0 18px rgba(var(--c-rgb),.45)}
+  .ficha i{display:block;font-size:.92rem;font-weight:300;color:var(--texto-2)}
+  .ficha h3{margin-top:0}
+  .ficha .datos{display:flex;justify-content:center;gap:18px;margin:14px 0;padding:8px 0;font-size:.85rem;
+                border-top:1px solid rgba(var(--oro-rgb),.22);border-bottom:1px solid rgba(var(--oro-rgb),.22)}
+  .ficha .datos span b{font-weight:500;color:var(--oro-claro)}
+  .ficha p{font-size:.95rem;line-height:1.6}
+  .ficha .ver{display:inline-block;margin-top:16px;font-size:.92rem;font-weight:500;
+              color:var(--c);border-bottom:1px solid rgba(var(--c-rgb),.5);padding-bottom:3px}
+  .brasa   {--c:#f2b48a;--c-rgb:242,180,138;--brillo-p:#fff2e8;--luz:#3a1810;--hondo:#0a0405}
+  .noche   {--c:#9ec3e6;--c-rgb:158,195,230;--brillo-p:#eef5ff;--luz:#10223f;--hondo:#03060d}
+  .jade    {--c:#9fdcc4;--c-rgb:159,220,196;--brillo-p:#effff8;--luz:#0d312c;--hondo:#020908}
+  .amatista{--c:#c8b2ec;--c-rgb:200,178,236;--brillo-p:#f7f1ff;--luz:#2a1544;--hondo:#07040c}
+
+
+  /* ===== Sacha inchi: la semilla estrella (paleta amatista, igual que en la interfaz) ===== */
+  .panel.amatista-panel{background-color:#0d0814;
+    background-image:radial-gradient(ellipse 60% 50% at 75% 25%,rgba(200,178,236,.13),transparent 70%),
+      radial-gradient(ellipse 50% 40% at 15% 90%,rgba(var(--oro-rgb),.06),transparent 70%);
+    box-shadow:0 -1px 0 rgba(200,178,236,.35)}
+  .sacha{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:70px;align-items:center}
+  #sacha .antetitulo{color:#c8b2ec}
+  .fruto{position:relative;aspect-ratio:1;width:100%;max-width:440px;justify-self:center}
+  .fruto .aro-fruto{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+  .fruto::before{content:"";position:absolute;inset:6%;border-radius:50%;
+                 background:radial-gradient(circle at 50% 45%,rgba(200,178,236,.22),transparent 68%)}
+  .fruto model-viewer{position:absolute;inset:5%;width:90%;height:90%;background:transparent;
+                      --poster-color:transparent;--progress-bar-height:0px;
+                      filter:drop-shadow(0 0 24px rgba(200,178,236,.35))}
+  .pilares{list-style:none;margin-top:34px;display:grid;gap:26px}
+  .pilar{display:grid;grid-template-columns:60px 1fr;gap:20px;align-items:start}
+  .pilar svg{width:60px;height:60px;color:#e3d6f7;filter:drop-shadow(0 0 10px rgba(200,178,236,.45))}
+  .pilar h3{font-family:var(--script);font-weight:400;font-size:1.9rem;line-height:1.1;color:var(--brillo);margin-bottom:4px}
+  .pilar p{font-size:1rem}
+  .placa-titulo{text-align:center;margin:120px auto 0;max-width:40em}
+  .placa-titulo h3{font-family:var(--script);font-weight:400;font-size:clamp(2rem,3.4vw,2.6rem);line-height:1.15;color:var(--brillo)}
+  .placa-titulo p{font-size:1rem;color:var(--texto-2);margin-top:6px}
+  .placa.tres{--fondo-marco:#0b0710;grid-template-columns:repeat(3,1fr);gap:28px;text-align:center;margin-top:50px;align-items:start}
+  .placa.tres b{display:block;font-size:clamp(3rem,6vw,4.4rem)}
+  .placa.tres span{display:block;font-size:.98rem;margin-top:8px}
+  .voz{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:50px;align-items:center;max-width:980px;margin:100px auto 0}
+  .voz blockquote p{font-family:var(--script);font-size:clamp(2rem,3.6vw,2.8rem);line-height:1.2;color:var(--brillo);
+                    text-shadow:0 0 20px rgba(200,178,236,.35)}
+  .voz blockquote footer{margin-top:14px;font-size:.98rem;color:var(--texto-2)}
+  .voz blockquote footer b{display:block;font-weight:500;color:var(--texto)}
+  .credito-fuente{text-align:center;margin-top:70px;font-size:.88rem;font-weight:300;color:var(--texto-2)}
+  .credito-fuente a{color:#c8b2ec}
+  @media (max-width:1000px){
+    .sacha,.voz{grid-template-columns:1fr;gap:50px}
+    .fruto{max-width:320px;order:-1}
+    .placa.tres{grid-template-columns:1fr;gap:34px}
+  }
+
+  /* ===== Cómo funciona ===== */
+  .evolucion{display:grid;grid-template-columns:1fr auto 1fr;gap:48px;align-items:center;max-width:980px;margin:0 auto 40px}
+  .etapa-evo{padding:34px 36px;border:1px solid rgba(var(--oro-rgb),.25);
+             background:radial-gradient(ellipse 80% 80% at 50% 0%,rgba(var(--oro-rgb),.07),transparent 70%)}
+  .etapa-evo:first-child{opacity:.8}
+  .etapa-evo h3{font-family:var(--script);font-weight:400;font-size:2.2rem;line-height:1.1;color:var(--brillo);margin-bottom:12px}
+  .etapa-evo p:not(.antetitulo){font-size:1rem}
+  .paso-evo{width:30px;height:30px;color:var(--oro);filter:drop-shadow(0 0 8px rgba(var(--oro-rgb),.6))}
+  @media (max-width:800px){.evolucion{grid-template-columns:1fr;gap:24px}.paso-evo{margin:0 auto}}
+  /* Secuencia real: 1, 2, 3 */
+  .pasos{list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:46px;margin-top:20px}
+  .paso{text-align:center}
+  .paso .foto{--fondo-marco:#0d0c09;aspect-ratio:4/3;padding:10px;margin-bottom:30px}
+  .paso .foto img{width:100%;height:100%;object-fit:cover;filter:sepia(.25) saturate(.85) contrast(1.05)}
+  .paso .num{display:block;font-family:var(--nombre);font-size:1.8rem;line-height:1;color:var(--oro)}
+  .paso h3{font-family:var(--script);font-weight:400;font-size:2.4rem;line-height:1.1;color:var(--brillo);margin:4px 0 12px}
+  .paso p{font-size:1rem;max-width:23em;margin-inline:auto}
+  .hecho{margin-top:90px;text-align:center}
+  .hecho .antetitulo{margin-bottom:22px}
+  .hecho ul{list-style:none;display:flex;flex-wrap:wrap;justify-content:center;gap:14px 46px;
+            font-family:var(--fuente);font-weight:300;font-size:1.1rem;letter-spacing:.06em;color:var(--texto)}
+  .hecho li{display:inline-flex;align-items:center;gap:46px}
+  .hecho li + li::before{content:"✦";color:var(--oro);font-size:.7rem;letter-spacing:0}
+
+  /* ===== Sobre el estudio ===== */
+  .estudio-emblema{display:grid;place-items:center;width:100%;height:100%;text-align:center;padding:14%}
+  .estudio-emblema b{font-family:"Hanging",var(--nombre);font-weight:400;font-size:clamp(2.4rem,5vw,3.4rem);line-height:1;
+                     color:var(--brillo);text-shadow:0 0 26px rgba(var(--oro-rgb),.5)}
+  .estudio-emblema b span{display:block;font-size:.55em;margin-top:.3em;color:var(--oro-claro)}
+  .marca-estudio{font-family:"Hanging",var(--nombre);font-weight:400}
+  .prototipo{margin-top:30px;padding:22px 26px;border:1px solid rgba(var(--oro-rgb),.3);
+             background:radial-gradient(ellipse 80% 90% at 0% 0%,rgba(var(--oro-rgb),.08),transparent 70%)}
+  .prototipo b{display:block;font-family:var(--script);font-weight:400;font-size:1.7rem;line-height:1.1;color:var(--oro-claro);margin-bottom:6px}
+  .prototipo p{font-size:1rem}
+  .autora{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:90px;align-items:center}
+  .autora .camafeo{max-width:380px;justify-self:center}
+  .iniciales{width:100%;height:100%;display:grid;place-items:center;font-family:var(--nombre);font-size:6rem;color:var(--brillo);
+             text-shadow:0 0 30px rgba(var(--oro-rgb),.5)}
+  .nombre-autora{font-family:var(--nombre);font-weight:400;font-size:clamp(3rem,6vw,4.6rem);line-height:1;color:var(--brillo);
+                 text-shadow:0 0 28px rgba(var(--oro-rgb),.4);margin-bottom:6px}
+  .rol{font-size:1rem;font-weight:300;font-style:italic;color:var(--oro);margin-bottom:30px}
+  .autora .acciones{margin-top:40px}
+
+  /* ===== Pie ===== */
+  footer.pie{background:var(--musgo-2);border-top:1px solid rgba(var(--oro-rgb),.3);padding:70px 0 40px}
+  .pie-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:40px;align-items:center}
+  .pie .lema{font-family:var(--script);font-size:2.2rem;line-height:1.1;color:var(--oro-claro)}
+  .pie .lema + p{font-size:.95rem;font-weight:300;color:var(--texto-2);margin-top:8px;max-width:22em}
+  .emblema{text-align:center}
+  .emblema svg{width:70px;height:70px;color:var(--oro);margin:0 auto 6px;display:block}
+  .emblema b{display:block;font-family:var(--nombre);font-weight:400;font-size:2.2rem;line-height:1;color:var(--brillo)}
+  .pie nav{height:auto;flex-direction:column;align-items:flex-end;gap:10px}
+  .pie nav a{text-decoration:none;font-size:.95rem;color:var(--texto-2)}
+  .pie nav a:hover{color:var(--oro-claro)}
+  .creditos{margin-top:50px;padding-top:22px;border-top:1px solid rgba(var(--oro-rgb),.15);text-align:center;
+            font-size:.85rem;font-weight:300;color:var(--texto-2)}
+
+  /* ===== Pantallas medianas y pequeñas ===== */
+  @media (max-width:1000px){
+    section{padding:100px 0}
+    .dos,.espejo-zona,.autora,.lamina-cita{grid-template-columns:1fr;gap:56px}
+    .lamina-cita .camafeo{max-width:240px;margin:0 auto}
+    .plantas{grid-template-columns:repeat(2,1fr);gap:50px 34px}
+    .pasos{grid-template-columns:1fr;max-width:520px;margin-inline:auto}
+    .flotante{max-width:360px}
+    .panel,.panel + section:not(.panel){border-radius:50% 50% 0 0/50px 50px 0 0}
+    .panel + section:not(.panel),section + .panel{margin-top:-50px}
+  }
+  @media (max-width:640px){
+    body{font-size:17px}
+    #portada{padding:20px 0 120px}
+    .portada-texto{margin-top:-30px}
+    .placa{grid-template-columns:1fr;gap:12px;padding:40px 30px;text-align:center}
+    .anios{grid-template-columns:1fr;gap:64px}
+    .pergamino{padding:54px 34px 44px}
+    .plantas{grid-template-columns:1fr;max-width:330px;margin-inline:auto}
+    .etapas li{grid-template-columns:1fr;gap:6px}
+    .pie-grid{grid-template-columns:1fr;text-align:center}
+    .pie .lema + p{margin-inline:auto}
+    .pie nav{align-items:center}
+    .acciones{gap:18px}
+  }
+</style>
+</head>
+<body>
+<!-- ===== Adornos reutilizables (oro, esquinas, floreos) ===== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="oro" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7d5f27"/><stop offset=".3" stop-color="#e9cf86"/><stop offset=".45" stop-color="#fff1c2"/>
+      <stop offset=".65" stop-color="#b8913f"/><stop offset=".85" stop-color="#f0d791"/><stop offset="1" stop-color="#8a6a2f"/>
+    </linearGradient>
+  </defs>
+  <symbol id="esquina" viewBox="0 0 60 60">
+    <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+      <path d="M3 57V22Q3 3 22 3h35"/>
+      <path d="M10 50V26Q10 10 26 10h24"/>
+      <path d="M22 22c8-1 10 8 3 9-5 1-6-6-2-6"/>
+      <path d="M10 40c6 0 9-4 9-10M40 10c0 6-4 9-10 9"/>
+    </g>
+    <circle cx="3" cy="57" r="2.4" fill="currentColor"/><circle cx="57" cy="3" r="2.4" fill="currentColor"/>
+    <path d="M14 14l4 2-2 4-4-2z" fill="currentColor"/>
+  </symbol>
+  <symbol id="floreo" viewBox="0 0 260 26">
+    <g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+      <path d="M2 13h80M178 13h80"/>
+      <path d="M82 13c10 0 14-9 22-9 7 0 8 8 2 9-4 1-6-3-3-5"/>
+      <path d="M178 13c-10 0-14-9-22-9-7 0-8 8-2 9 4 1 6-3 3-5"/>
+      <path d="M82 13c10 0 14 9 22 9 6 0 10-4 12-9M178 13c-10 0-14 9-22 9-6 0-10-4-12-9"/>
+    </g>
+    <path d="M130 3l7 10-7 10-7-10z" fill="currentColor"/>
+    <circle cx="2" cy="13" r="2" fill="currentColor"/><circle cx="258" cy="13" r="2" fill="currentColor"/>
+  </symbol>
+  <symbol id="estrella" viewBox="0 0 24 24">
+    <path d="M12 0Q12 12 24 12Q12 12 12 24Q12 12 0 12Q12 12 12 0z" fill="currentColor"/>
+  </symbol>
+</svg>
+
+<canvas id="luciernagas" aria-hidden="true"></canvas>
+
+<header>
+  <nav class="contenedor" aria-label="Principal">
+    <a class="marca" href="#portada">El almácigo</a>
+    <button id="menu" aria-expanded="false" aria-controls="enlaces">Menú</button>
+    <ul class="enlaces" id="enlaces">
+      <li><a href="#problema">El problema</a></li>
+      <li><a href="#interfaz">La interfaz</a></li>
+      <li><a href="#plantas">Las plantas</a></li>
+      <li><a href="#sacha">Sacha inchi</a></li>
+      <li><a href="#autora">El estudio</a></li>
+      <li><a class="boton dorado" href="interfaz-plantas.html#volver">Abrir la interfaz</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <!-- ================= PORTADA ================= -->
+  <section id="portada">
+    <div class="contenedor">
+      <div class="astrolabio" aria-hidden="true">
+        <svg viewBox="0 0 900 900">
+          <defs>
+            <path id="circulo-texto" d="M450 450m-392 0a392 392 0 1 1 784 0a392 392 0 1 1-784 0"/>
+          </defs>
+          <!-- Anillo exterior dorado -->
+          <circle class="trazo" cx="450" cy="450" r="440" fill="none" stroke="url(#oro)" stroke-width="2.2"/>
+          <g class="aparece">
+            <circle cx="450" cy="450" r="430" fill="none" stroke="rgba(212,180,106,.4)" stroke-width="1"/>
+            <!-- Escala con marcas -->
+            <g class="giro" id="escala"></g>
+            <!-- Leyenda que gira -->
+            <g class="giro-inv">
+              <text class="rotulo"><textPath href="#circulo-texto">SEMILLA ✦ MEMORIA ✦ RAÍZ ✦ FLOR ✦ SABER ✦ COSECHA ✦ TODOS JUNTOS SABEMOS MÁS QUE UNO SOLO ✦ REPOSITORIO VIVO ✦ SUR GLOBAL ✦</textPath></text>
+            </g>
+            <circle cx="450" cy="450" r="368" fill="none" stroke="rgba(212,180,106,.55)" stroke-width="1"/>
+            <circle cx="450" cy="450" r="356" fill="none" stroke="rgba(212,180,106,.25)" stroke-width="1" stroke-dasharray="2 9"/>
+            <!-- Constelación -->
+            <g stroke="rgba(243,223,164,.35)" stroke-width=".8" fill="none">
+              <path d="M180 300L240 230L330 250L360 170"/><path d="M640 620L700 560L760 600L720 680"/>
+            </g>
+            <g fill="#fbf3df">
+              <circle cx="180" cy="300" r="2.4"/><circle cx="240" cy="230" r="3"/><circle cx="330" cy="250" r="2"/><circle cx="360" cy="170" r="2.6"/>
+              <circle cx="640" cy="620" r="2.6"/><circle cx="700" cy="560" r="2"/><circle cx="760" cy="600" r="3"/><circle cx="720" cy="680" r="2.2"/>
+            </g>
+            <g class="giro adornos"></g>
+          </g>
+        </svg>
+        <img src="imagenes/sitio/manos-tierra.webp" alt="">
+      </div>
+      <div class="portada-texto">
+        <p class="antetitulo">Repositorio vivo de semillas nativas</p>
+        <h1>El almácigo</h1>
+        <p class="lead">Acerca una semilla y descubre la planta que lleva dentro: cómo se siembra, cómo se cuida y para qué sirve. Un prototipo de <span class="marca-estudio">surReal Studio</span>.</p>
+        <div class="acciones">
+          <a class="boton dorado" href="#interfaz">Ver la interfaz</a>
+          <a class="boton" href="#problema">Conocer el proyecto</a>
+        </div>
+      </div>
+      <p class="cinta" aria-label="Semilla, memoria, raíz, saber"><span>Semilla</span><span>Memoria</span><span>Raíz</span><span>Saber</span></p>
+    </div>
+  </section>
+
+  <!-- ================= EL PROBLEMA ================= -->
+  <section id="problema" class="panel">
+    <div class="contenedor">
+      <div class="dos">
+        <div class="izq">
+          <p class="antetitulo">Sobre el problema</p>
+          <h2 class="titulo">Semillas en riesgo</h2>
+          <svg class="floreo"><use href="#floreo"/></svg>
+          <p class="cita-grande">Cada semilla nativa guarda siglos de adaptación y saber campesino.</p>
+          <p class="lead">Cuando una variedad deja de sembrarse, se pierde para siempre, y con ella el conocimiento para cultivarla.</p>
+          <p class="lead" style="margin-top:1.6em;font-style:italic;color:var(--oro-claro)">¿Quién decide qué sembramos y qué comemos?</p>
+          <ul class="puntos">
+            <li>Comunidades que dejan sus semillas y dependen de comprarlas en cada cosecha.</li>
+            <li>Semillas híbridas que no se pueden volver a sembrar con los mismos resultados.</li>
+            <li>Más dependencia de fertilizantes y agroquímicos.</li>
+          </ul>
+        </div>
+        <img class="flotante" src="imagenes/sitio/huerta.webp" alt="Ilustración de una huerta con zanahorias, coles y cebollas">
+      </div>
+
+      <div class="placa dorado-marco">
+        <span class="esq a"><svg><use href="#esquina"/></svg></span><span class="esq b"><svg><use href="#esquina"/></svg></span>
+        <span class="esq c"><svg><use href="#esquina"/></svg></span><span class="esq d"><svg><use href="#esquina"/></svg></span>
+        <b>56&nbsp;%</b>
+        <div>
+          <p class="lead">de las semillas del mundo está en manos de cuatro empresas. Bayer, Syngenta, Corteva y BASF controlan además el 61&nbsp;% del mercado de pesticidas.</p>
+          <p class="fuente">Fuente: ETC Group</p>
+        </div>
+      </div>
+
+      <div class="linea centro">
+        <p class="antetitulo">El caso colombiano</p>
+        <h2 class="titulo">La Resolución 970</h2>
+        <svg class="floreo"><use href="#floreo"/></svg>
+        <ol class="anios">
+          <li class="anio">
+            <svg class="simbolo" viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="resplandor" cx="60" cy="60" r="46"/>
+              <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M58 104C58 80 60 56 70 22"/>
+                <ellipse cx="72" cy="22" rx="4" ry="7" transform="rotate(20 72 22)"/>
+                <ellipse cx="60" cy="38" rx="4" ry="7" transform="rotate(-35 60 38)"/><ellipse cx="74" cy="42" rx="4" ry="7" transform="rotate(40 74 42)"/>
+                <ellipse cx="56" cy="56" rx="4" ry="7" transform="rotate(-35 56 56)"/><ellipse cx="71" cy="60" rx="4" ry="7" transform="rotate(40 71 60)"/>
+                <ellipse cx="53" cy="73" rx="4" ry="7" transform="rotate(-35 53 73)"/><ellipse cx="68" cy="77" rx="4" ry="7" transform="rotate(40 68 77)"/>
+                <path d="M30 30l60 60M90 30L30 90" stroke="#e8836b" stroke-width="2.4"/>
+              </g>
+            </svg>
+            <span class="ano">2010</span>
+            <p>Funcionarios del ICA destruyen 62 toneladas de arroz en el Huila, en cumplimiento de la norma.</p>
+            <p class="fuente">La Silla Vacía</p>
+          </li>
+          <li class="anio">
+            <svg class="simbolo" viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="resplandor" cx="60" cy="60" r="46"/>
+              <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="28" y="18" width="64" height="44" rx="3"/>
+                <path d="M60 62v44M50 106h20"/>
+                <path d="M60 54V36M60 44c-7 0-11-5-11-11 6 0 11 4 11 11zM60 40c7 0 11-5 11-11-6 0-11 4-11 11z"/>
+                <path d="M36 54h48" opacity=".5"/>
+              </g>
+            </svg>
+            <span class="ano">2013</span>
+            <p>El paro agrario exige que no se autorice la propiedad intelectual sobre las semillas.</p>
+            <p class="fuente">Universidad de los Andes</p>
+          </li>
+          <li class="anio">
+            <svg class="simbolo" viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="resplandor" cx="60" cy="60" r="46"/>
+              <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M32 16h40l16 16v72H32z"/><path d="M72 16v16h16"/>
+                <path d="M42 42h34M42 52h34M42 62h22"/>
+                <circle cx="72" cy="84" r="12"/>
+                <path d="M68 74l6 7-5 4 6 9" stroke="#e8836b"/>
+              </g>
+            </svg>
+            <span class="ano">2015</span>
+            <p>La Resolución 3168 deroga la 970, pero el debate sigue abierto.</p>
+            <p class="fuente">Universidad del Rosario</p>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LA VOZ DE LA CUSTODIA ================= -->
+  <section id="custodia">
+    <div class="contenedor lamina-cita">
+      <div class="camafeo"><div class="ventana"><img src="imagenes/sitio/paula-urrego.webp" alt="Paula Andrea Urrego Álvarez"></div></div>
+      <figure class="pergamino">
+        <span class="esq a"><svg><use href="#esquina"/></svg></span><span class="esq b"><svg><use href="#esquina"/></svg></span>
+        <span class="esq c"><svg><use href="#esquina"/></svg></span><span class="esq d"><svg><use href="#esquina"/></svg></span>
+        <span class="comillas" aria-hidden="true">“</span>
+        <blockquote><p>Es muy difícil mostrarle a una persona que probablemente nunca ha visto la flor de la zanahoria cómo es precisamente la flor, pues seguramente no la tenemos disponible en la huerta.</p></blockquote>
+        <figcaption><footer>Paula Andrea Urrego Álvarez<span>Custodia de semillas en La Biblioteca de Semillas Otra Parte</span></footer></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ================= LA PROPUESTA ================= -->
+  <section id="propuesta" class="panel">
+    <div class="contenedor dos">
+      <div class="izq">
+        <p class="antetitulo">Qué es</p>
+        <h2 class="titulo">Un repositorio vivo</h2>
+        <svg class="floreo"><use href="#floreo"/></svg>
+        <p class="lead">El almácigo reúne modelos 3D de las plantas que resguardan los custodios, para que se puedan ver en cualquier época del año, aunque no estén en la huerta.</p>
+        <ul class="etapas">
+          <li><b>Hoy</b><span>Un prototipo inicial: una pieza artística y de divulgación que hace visible este saber.</span></li>
+          <li><b>Mañana</b><span>Una herramienta en manos de los custodios, que ellos mismos siguen alimentando con modelos e información.</span></li>
+          <li><b>Propósito</b><span>Facilitar que los saberes sobre semillas nativas y criollas pasen a las nuevas generaciones.</span></li>
+        </ul>
+      </div>
+      <img class="flotante" src="imagenes/sitio/semillas.webp" alt="Ilustración de semillas nativas">
+    </div>
+  </section>
+
+  <!-- ================= LA INTERFAZ ================= -->
+  <section id="interfaz">
+    <div class="contenedor">
+      <div class="centro">
+        <p class="antetitulo">El espejo de las plantas</p>
+        <h2 class="titulo">La interfaz</h2>
+        <svg class="floreo"><use href="#floreo"/></svg>
+      </div>
+      <div class="espejo-zona">
+        <div>
+          <p>En la exposición, cada semilla lleva una etiqueta. Al ponerla sobre un lector, aparece su planta en 3D junto con su semilla, su flor y lo necesario para sembrarla.</p>
+          <p>Pruébala aquí: elige una planta.</p>
+          <div class="chips" role="group" aria-label="Elegir planta"></div>
+          <p class="nota">También puedes usar las teclas 1 a 4 dentro del espejo, y 0 para volver al inicio.</p>
+          <p style="margin-top:28px"><a class="enlace" id="abrirCompleta" href="interfaz-plantas.html#volver">Abrir en pantalla completa</a></p>
+        </div>
+        <div class="espejo dorado-marco">
+          <span class="esq a"><svg><use href="#esquina"/></svg></span><span class="esq b"><svg><use href="#esquina"/></svg></span>
+          <span class="esq c"><svg><use href="#esquina"/></svg></span><span class="esq d"><svg><use href="#esquina"/></svg></span>
+          <iframe id="visor" src="interfaz-plantas.html#incrustado" title="Interfaz de plantas de El almácigo" loading="lazy" allow="autoplay"></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LAS PLANTAS ================= -->
+  <section id="plantas" class="panel">
+    <div class="contenedor">
+      <div class="centro">
+        <p class="antetitulo">Las semillas del repositorio</p>
+        <h2 class="titulo">Las plantas</h2>
+        <svg class="floreo"><use href="#floreo"/></svg>
+        <p class="lead" style="margin-bottom:70px">Cuatro semillas, cuatro lectores. Cada planta tiene su propio color en la interfaz.</p>
+      </div>
+      <div class="plantas" id="listaPlantas"></div>
+    </div>
+  </section>
+
+  <!-- ================= SACHA INCHI: TRANSFORMACIÓN SOCIAL =================
+       Fuente: Instituto SINCHI, "Sacha Inchi: la semilla estrella que transforma la Amazonia" (21 de marzo de 2023). -->
+  <section id="sacha" class="panel amatista-panel">
+    <div class="contenedor">
+      <div class="sacha">
+        <div class="izq">
+          <p class="antetitulo">La semilla estrella</p>
+          <h2 class="titulo">Sacha inchi y la transformación social</h2>
+          <svg class="floreo"><use href="#floreo"/></svg>
+          <p class="lead">En el Guaviare y el sur del Meta, esta semilla amazónica se ha vuelto una alternativa para dejar atrás los cultivos ilícitos y la ganadería extensiva, sin tumbar la selva.</p>
+          <ul class="pilares">
+            <li class="pilar">
+              <svg viewBox="0 0 64 64" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 30a18 18 0 0 1 31-12M50 34a18 18 0 0 1-31 12"/><path d="M45 10v8h-8M19 54v-8h8"/>
+                <path d="M32 42V28M32 34c-5 0-8-3-8-8 5 0 8 3 8 8zM32 31c5 0 8-3 8-8-5 0-8 3-8 8z"/></g></svg>
+              <div><h3>Sustitución de cultivos</h3>
+              <p>Empieza a producir a los pocos meses y se vende todo el año. Para muchas familias campesinas es una forma concreta de cambiar la coca por otro sustento.</p></div>
+            </li>
+            <li class="pilar">
+              <svg viewBox="0 0 64 64" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M32 58V30M32 44l-8-6M32 38l8-6"/><path d="M32 8c10 0 18 7 18 16 0 8-7 13-18 13S14 32 14 24c0-9 8-16 18-16z"/>
+                <path d="M10 58h44"/></g></svg>
+              <div><h3>Cuidado del bosque</h3>
+              <p>Se siembra en arreglos agroforestales, junto a árboles como el abarco, el cacay y el copoazú, como parte de la lucha contra la deforestación.</p></div>
+            </li>
+            <li class="pilar">
+              <svg viewBox="0 0 64 64" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M32 8C26 20 18 28 18 38a14 14 0 0 0 28 0c0-10-8-18-14-30z"/><path d="M25 40a7 7 0 0 0 7 7"/></g></svg>
+              <div><h3>Se aprovecha toda la planta</h3>
+              <p>Su aceite tiene omega 3, 6 y 9 y vitamina E. Con las hojas se hace té, con la cáscara bioabono, y con lo que queda tras extraer el aceite se hornean galletas, tortas y arepas.</p></div>
+            </li>
+          </ul>
+        </div>
+        <!-- Modelo 3D del sacha inchi -->
+        <div class="fruto">
+          <svg class="aro-fruto" viewBox="0 0 400 400" aria-hidden="true">
+            <circle cx="200" cy="200" r="190" fill="none" stroke="url(#oro)" stroke-width="1.6"/>
+            <circle cx="200" cy="200" r="176" fill="none" stroke="rgba(200,178,236,.35)" stroke-width="1" stroke-dasharray="2 8"/>
+            <circle cx="200" cy="10" r="4" fill="url(#oro)"/><circle cx="390" cy="200" r="4" fill="url(#oro)"/>
+            <circle cx="200" cy="390" r="4" fill="url(#oro)"/><circle cx="10" cy="200" r="4" fill="url(#oro)"/>
+          </svg>
+          <model-viewer id="modeloSacha" src="modelos/sacha-inchi.glb" alt="Modelo 3D de la planta de sacha inchi"
+            camera-orbit="0deg 80deg auto" interaction-prompt="none" disable-zoom disable-pan
+            exposure="1.1" shadow-intensity="0" loading="lazy"></model-viewer>
+        </div>
+      </div>
+
+      <div class="placa-titulo">
+        <h3>Asoproagro, en el Guaviare</h3>
+        <p>Asociación nacida en 2010 para buscar alternativas de producción sostenible e impulsar la sustitución voluntaria de cultivos ilícitos.</p>
+      </div>
+      <div class="placa tres dorado-marco">
+        <span class="esq a"><svg><use href="#esquina"/></svg></span><span class="esq b"><svg><use href="#esquina"/></svg></span>
+        <span class="esq c"><svg><use href="#esquina"/></svg></span><span class="esq d"><svg><use href="#esquina"/></svg></span>
+        <div><b>160</b><span>asociados</span></div>
+        <div><b>110</b><span>toneladas al año de capacidad en su planta piloto</span></div>
+        <div><b>+1.000</b><span>hectáreas de bosque en conservación</span></div>
+      </div>
+
+      <div class="voz">
+        <blockquote>
+          <p>“El Sacha Inchi no es el fin, sino un medio.”</p>
+          <footer><b>José Ibáñez, representante legal de Asoproagro</b>Un medio para mejorar la vida de las familias, en equilibrio entre lo económico, lo social y lo ambiental.</footer>
+        </blockquote>
+        <div class="acciones"><a class="boton dorado" href="interfaz-plantas.html#volver,sacha-inchi">Ver el sacha inchi</a></div>
+      </div>
+
+      <p class="credito-fuente">Fuente: Instituto SINCHI, <a href="https://sinchi.org.co/sacha-inchi-la-semilla-estrella-que-transforma-la-amazonia" target="_blank" rel="noopener">“Sacha Inchi: la semilla estrella que transforma la Amazonia”</a>, 21 de marzo de 2023.</p>
+    </div>
+  </section>
+
+
+  <!-- ================= CÓMO FUNCIONA ================= -->
+  <section id="funciona">
+    <div class="contenedor">
+      <div class="centro">
+        <p class="antetitulo">Entre la tierra y el circuito</p>
+        <h2 class="titulo">Antes y después</h2>
+        <svg class="floreo"><use href="#floreo"/></svg>
+      </div>
+
+      <!-- De TouchDesigner a la web -->
+      <div class="evolucion">
+        <div class="etapa-evo">
+          <p class="antetitulo">Primero</p>
+          <h3>Una experiencia en TouchDesigner</h3>
+          <p>El almácigo nació como una pieza performativa, con visuales y sonido en tiempo real. Funcionaba, pero montarlo y modificarlo exigía conocimientos técnicos que pocos tienen.</p>
+        </div>
+        <svg class="paso-evo" viewBox="0 0 24 24" aria-hidden="true"><use href="#estrella"/></svg>
+        <div class="etapa-evo">
+          <p class="antetitulo">Ahora</p>
+          <h3>Una página web</h3>
+          <p>Se abre en el navegador y se conecta directo al Arduino. Así los custodios pueden replicar el proyecto y sumar sus propias plantas con su modelo 3D, sus imágenes y sus textos.</p>
+        </div>
+      </div>
+      <p class="lead centro" style="margin:0 auto 90px">La idea es que sea fácil de hacer: que el repositorio crezca en manos de quienes guardan las semillas.</p>
+
+      <ol class="pasos">
+        <li class="paso">
+          <div class="foto dorado-marco"><img src="imagenes/sitio/prototipo-2.webp" alt="Primera idea de la pieza, modelada en 3D"></div>
+          <span class="num">1</span>
+          <h3>Acerca una semilla</h3>
+          <p>Cada semilla va con una etiqueta RFID y se pone sobre uno de los cuatro lectores.</p>
+        </li>
+        <li class="paso">
+          <div class="foto dorado-marco"><img src="imagenes/sitio/lectores-rfid.webp" alt="Cuatro lectores RFID conectados"></div>
+          <span class="num">2</span>
+          <h3>El lector la reconoce</h3>
+          <p>Los lectores RC522 están conectados a un Arduino Mega, que envía a la página web el número de la planta.</p>
+        </li>
+        <li class="paso">
+          <div class="foto dorado-marco"><img src="imagenes/sitio/prototipo-1.webp" alt="Otra idea de la pieza, modelada en 3D"></div>
+          <span class="num">3</span>
+          <h3>La planta aparece</h3>
+          <p>La página muestra el modelo 3D de la planta, su semilla, su flor, su cuidado y sus usos.</p>
+        </li>
+      </ol>
+      <div class="hecho">
+        <p class="antetitulo">Hecho con</p>
+        <ul><li>Arduino Mega</li><li>RFID RC522</li><li>HTML y JavaScript</li><li>Modelos 3D</li><li>Web Serial</li></ul>
+      </div>
+    </div>
+  </section>
+
+
+  <section id="autora" class="panel">
+    <div class="contenedor autora">
+      <div class="camafeo"><div class="ventana">
+        <img src="imagenes/sitio/estudio.png" alt="surReal Studio" style="object-fit:contain;padding:14%"
+             onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'estudio-emblema',innerHTML:'<b>surReal<span>Studio</span></b>'}))">
+      </div></div>
+      <div class="izq">
+        <p class="antetitulo">Quién siembra este repositorio</p>
+        <h2 class="titulo">El estudio</h2>
+        <svg class="floreo"><use href="#floreo"/></svg>
+        <p class="nombre-autora marca-estudio">surReal Studio</p>
+        <p class="rol">Estudio de diseño y experiencias interactivas</p>
+        <p>En surReal Studio queremos que el saber de los custodios de semillas llegue a las nuevas generaciones, uniendo modelos 3D, electrónica y visuales interactivas en una sola pieza.</p>
+        <div class="prototipo">
+          <b>Un prototipo inicial</b>
+          <p>Lo que presentamos aquí es el primer paso hacia el repositorio vivo que aspiramos a construir: uno que crezca con más plantas y más saberes, y que los custodios puedan seguir alimentando con sus propias manos.</p>
+        </div>
+        <div class="acciones">
+          <!-- EDITA: el correo del estudio -->
+          <a class="boton dorado" href="mailto:imsurrealstudio@gmail.com">Escríbenos</a>
+          <a class="boton" href="interfaz-plantas.html#volver">Abrir la interfaz</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="pie">
+  <div class="contenedor">
+    <div class="pie-grid">
+      <div>
+        <p class="lema">Sembrar es recordar</p>
+        <p>Gracias a los custodios de semillas que guardan este saber.</p>
+      </div>
+      <div class="emblema">
+        <svg viewBox="0 0 70 70" aria-hidden="true">
+          <circle cx="35" cy="35" r="33" fill="none" stroke="url(#oro)" stroke-width="1.4"/>
+          <circle cx="35" cy="35" r="28" fill="none" stroke="currentColor" stroke-width=".6" stroke-dasharray="1.5 4"/>
+          <path d="M35 54V26M35 44c-7-1-11-6-11-12 6 1 10 6 11 12zM35 36c7-1 11-6 11-12-6 1-10 6-11 12z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M35 12q0 6 6 6-6 0-6 6 0-6-6-6 6 0 6-6z" fill="currentColor"/>
+        </svg>
+        <b>El almácigo</b>
+      </div>
+      <nav aria-label="Pie">
+        <a href="#problema">El problema</a>
+        <a href="#interfaz">La interfaz</a>
+        <a href="#plantas">Las plantas</a>
+        <a href="#sacha">Sacha inchi</a>
+        <a href="#autora">El estudio</a>
+      </nav>
+    </div>
+    <p class="creditos">El almácigo. Un prototipo de <span class="marca-estudio">surReal Studio</span>, 2026.</p>
+  </div>
+</footer>
+
+<script>
+const PLANTAS = [
+  {id:"zanahoria", semilla:"modelos/semillas/s_zanahoria.glb", tamano:1.5,   nombre:"Zanahoria",   cientifico:"Daucus carota subsp. sativus", familia:"Apiaceae",      paleta:"brasa",    color:"#f2b48a",
+   texto:"Raíz de clima templado. Se come cruda o cocida y aporta betacaroteno y fibra."},
+  {id:"algodon", semilla:"modelos/semillas/s_algodon.glb", tamano:1.4,     nombre:"Algodón",     cientifico:"Gossypium hirsutum",           familia:"Malvaceae",     paleta:"noche",    color:"#9ec3e6",
+   texto:"Planta de clima cálido. Su fibra se usa en textiles y de su semilla se obtiene aceite."},
+  {id:"cilantro", semilla:"modelos/semillas/s_cilantro.glb", tamano:1.3,    nombre:"Cilantro",    cientifico:"Coriandrum sativum",           familia:"Apiaceae",      paleta:"jade",     color:"#9fdcc4",
+   texto:"Hierba de clima fresco. Sus hojas sazonan salsas y sopas, y sus semillas son el coriandro."},
+  {id:"sacha-inchi", semilla:"modelos/semillas/s_sacha-inchi.glb", tamano:1.5, nombre:"Sacha inchi", cientifico:"Plukenetia volubilis",         familia:"Euphorbiaceae", paleta:"amatista", color:"#c8b2ec",
+   texto:"Trepadora de clima cálido y húmedo. Sus semillas se comen tostadas y dan aceite con omega 3."}
+];
+const $ = id => document.getElementById(id);
+
+/* Marcos ovalados con perlas para cada camafeo */
+(function(){
+  let perlas = "";
+  for (let i = 0; i < 48; i++) {
+    const a = i / 48 * Math.PI * 2;
+    perlas += `<circle cx="${(150 + 143 * Math.cos(a)).toFixed(1)}" cy="${(190 + 183 * Math.sin(a)).toFixed(1)}" r="3.1" fill="url(#oro)"/>`;
+  }
+  const svg = `<svg class="aro-oval" viewBox="0 0 300 380" aria-hidden="true">
+    <ellipse cx="150" cy="190" rx="131" ry="171" fill="none" stroke="url(#oro)" stroke-width="13"/>
+    <ellipse cx="150" cy="190" rx="122" ry="162" fill="none" stroke="#3b2c10" stroke-width="2"/>
+    <ellipse cx="150" cy="190" rx="138" ry="178" fill="none" stroke="#3b2c10" stroke-width="1"/>
+    ${perlas}
+    <path d="M150 2c-8 8-20 6-24 0 6 10 16 12 24 8 8 4 18 2 24-8-4 6-16 8-24 0z" fill="url(#oro)"/>
+    <path d="M150 0l5 9-5 9-5-9z" fill="url(#oro)"/>
+    <path d="M150 378c-8-8-20-6-24 0 6-10 16-12 24-8 8-4 18-2 24 8-4-6-16-8-24 0z" fill="url(#oro)"/>
+  </svg>`;
+  document.querySelectorAll(".camafeo").forEach(c => c.insertAdjacentHTML("beforeend", svg));
+})();
+
+/* Astrolabio: escala de marcas y estrellas */
+(function(){
+  let s = "";
+  for (let g = 0; g < 360; g += 5) {
+    const a = g * Math.PI / 180, largo = g % 30 === 0 ? 22 : 10;
+    const x1 = 450 + 368 * Math.cos(a), y1 = 450 + 368 * Math.sin(a);
+    const x2 = 450 + (368 - largo) * Math.cos(a), y2 = 450 + (368 - largo) * Math.sin(a);
+    s += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="rgba(212,180,106,${g % 30 === 0 ? .8 : .4})" stroke-width="1"/>`;
+  }
+  $("escala").innerHTML = s;
+  const estrella = (x, y, t) =>
+    `<path class="destello" d="M${x} ${y-t}Q${x} ${y} ${x+t} ${y}Q${x} ${y} ${x} ${y+t}Q${x} ${y} ${x-t} ${y}Q${x} ${y} ${x} ${y-t}z"/>`;
+  let e = "";
+  for (let ang = 0; ang < 360; ang += 45) {
+    const a = ang * Math.PI / 180, x = 450 + 440 * Math.cos(a), y = 450 + 440 * Math.sin(a);
+    e += ang % 90 === 0 ? estrella(x, y, 16) : `<circle cx="${x}" cy="${y}" r="4.5" fill="url(#oro)"/>`;
+  }
+  document.querySelectorAll(".adornos").forEach(g => g.innerHTML = e);
+})();
+
+/* ================= LÁMINAS DE PLANTAS ================= */
+$("listaPlantas").innerHTML = PLANTAS.map((p, i) => `
+  <a class="planta ${p.paleta}" href="interfaz-plantas.html#volver,${p.id}">
+    <svg class="remate" aria-hidden="true"><use href="#estrella"/></svg>
+    <div class="arco">
+      <span class="orb" aria-hidden="true"></span>
+      <model-viewer src="${p.semilla}" alt="Modelo 3D de la semilla de ${p.nombre.toLowerCase()}"
+        data-inicial="${p.nombre[0]}" data-tamano="${p.tamano || 1}" camera-orbit="0deg 75deg auto"
+        field-of-view="30deg" min-field-of-view="30deg" max-field-of-view="30deg" interaction-prompt="none"
+        disable-zoom disable-pan exposure="1.1" loading="lazy"></model-viewer>
+    </div>
+    <div class="ficha">
+      <h3>${p.nombre}</h3>
+      <i>${p.cientifico}</i>
+      <div class="datos"><span><b>Familia</b> ${p.familia}</span><span><b>Lector</b> ${i + 1}</span></div>
+      <p>${p.texto}</p>
+      <span class="ver">Ver en la interfaz</span>
+    </div>
+  </a>`).join("");
+
+
+const RELLENO = 0.9;    // qué tan grandes se ven las semillas en el arco 
+const DISTANCIA = 4;    // distancia fija de la cámara, en metros
+function ajustarSemilla(mv){
+  if (!mv.loaded || !mv.clientWidth) return;
+  if (!mv.dataset.medida) {                           // medir una sola vez, antes de escalar
+    const d = mv.getDimensions();
+    mv.dataset.medida = [d.x, d.y, d.z].join(",");
+  }
+  const [x, y, z] = mv.dataset.medida.split(",").map(Number);
+  const tanV = Math.tan(15 * Math.PI / 180);          // mitad del campo de visión de 30°
+  const tanH = tanV * mv.clientWidth / mv.clientHeight;
+  // tamaño visible en pantalla: el ancho, y el alto visto un poco desde arriba (75°)
+  const ancho = Math.max(x, z * 0.5), alto = y * 0.97 + z * 0.26;
+  const visibleAncho = 2 * (DISTANCIA - 1) * tanH * RELLENO;
+  const visibleAlto  = 2 * (DISTANCIA - 1) * tanV * RELLENO;
+  const escala = Math.min(visibleAncho / ancho, visibleAlto / alto) * (parseFloat(mv.dataset.tamano) || 1);
+  mv.scale = `${escala} ${escala} ${escala}`;
+  mv.minCameraOrbit = mv.maxCameraOrbit = `auto auto ${DISTANCIA}m`;
+  mv.minFieldOfView = mv.maxFieldOfView = mv.fieldOfView = "30deg";
+  mv.cameraTarget = "auto auto auto";
+  mv.cameraOrbit = `0deg 75deg ${DISTANCIA}m`;
+  mv.jumpCameraToGoal();
+}
+document.querySelectorAll(".arco model-viewer").forEach(mv => mv.addEventListener("load", () => ajustarSemilla(mv)));
+addEventListener("resize", () => document.querySelectorAll(".arco model-viewer").forEach(ajustarSemilla));
+
+/* Si el modelo de una semilla no carga, se muestra la inicial de la planta */
+document.querySelectorAll(".arco model-viewer").forEach(mv => mv.addEventListener("error", () => {
+  console.warn("[semilla] No se pudo cargar:", mv.getAttribute("src"));
+  mv.replaceWith(Object.assign(document.createElement("span"), {className:"inicial", textContent: mv.dataset.inicial}));
+}));
+const mvSacha = $("modeloSacha");
+mvSacha.addEventListener("error", () => console.warn("[sacha inchi] No se pudo cargar:", mvSacha.getAttribute("src")));
+
+/* ================= CONEXIÓN CON LA INTERFAZ =================
+   Los botones envían la planta al espejo; la interfaz responde cuál está visible. */
+const visor = $("visor"), chips = document.querySelector(".chips");
+chips.innerHTML = PLANTAS.map(p =>
+  `<button class="chip" style="--c:${p.color}" data-id="${p.id}" aria-pressed="false">${p.nombre}</button>`).join("") +
+  `<button class="chip" data-id="" aria-pressed="true">Inicio</button>`;
+
+function marcar(id){
+  chips.querySelectorAll(".chip").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.id === (id || ""))));
+  $("abrirCompleta").href = "interfaz-plantas.html#volver" + (id ? "," + id : "");
+}
+chips.addEventListener("click", e => {
+  const b = e.target.closest(".chip");
+  if (!b) return;
+  visor.contentWindow.postMessage({almacigo:"planta", valor: b.dataset.id || 0}, "*");
+  marcar(b.dataset.id);
+});
+addEventListener("message", e => {
+  if (e.source === visor.contentWindow && e.data && e.data.almacigo === "cambio") marcar(e.data.id);
+});
+
+/* ================= MENÚ EN CELULAR ================= */
+function cerrarMenu(){ $("enlaces").classList.remove("abierto"); $("menu").setAttribute("aria-expanded", false); $("menu").textContent = "Menú"; }
+$("menu").addEventListener("click", () => {
+  const abierto = $("enlaces").classList.toggle("abierto");
+  $("menu").setAttribute("aria-expanded", abierto);
+  $("menu").textContent = abierto ? "Cerrar" : "Menú";
+});
+$("enlaces").addEventListener("click", e => { if (e.target.tagName === "A") cerrarMenu(); });
+
+/* Marca en el menú la sección visible */
+const enlacesNav = [...document.querySelectorAll('.enlaces a[href^="#"]')];
+const observador = new IntersectionObserver(entradas => entradas.forEach(en => {
+  if (en.isIntersecting) enlacesNav.forEach(a => a.classList.toggle("activo", a.getAttribute("href") === "#" + en.target.id));
+}), {rootMargin:"-45% 0px -50% 0px"});
+["problema","interfaz","plantas","sacha","autora"].forEach(id => observador.observe($(id)));
+
+/* ================= LUCIÉRNAGAS ================= */
+(function(){
+  const cv = $("luciernagas"), ctx = cv.getContext("2d");
+  const quieto = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let W, H, bichos;
+  const nueva = y => ({
+    x: Math.random() * W, y: y ?? Math.random() * H,
+    r: Math.random() * 1.6 + .5, vy: -(Math.random() * .3 + .06),
+    f: Math.random() * Math.PI * 2, vf: Math.random() * .03 + .01,
+    tono: Math.random() < .55 ? "212,180,106" : (Math.random() < .5 ? "243,223,164" : "190,230,160")
+  });
+  function medir(){
+    const d = Math.min(devicePixelRatio || 1, 2);
+    W = innerWidth; H = innerHeight;
+    cv.width = W * d; cv.height = H * d; ctx.setTransform(d, 0, 0, d, 0, 0);
+    bichos = Array.from({length: Math.round(W * H / 16000)}, () => nueva());
+  }
+  function dibujar(){
+    ctx.clearRect(0, 0, W, H);
+    bichos.forEach((b, i) => {
+      if (!quieto) { b.f += b.vf; b.y += b.vy; b.x += Math.sin(b.f) * .3; }
+      if (b.y < -10) bichos[i] = nueva(H + 10);
+      const a = .15 + .5 * Math.abs(Math.sin(b.f));
+      ctx.shadowBlur = 12; ctx.shadowColor = `rgba(${b.tono},${a})`;
+      ctx.fillStyle = `rgba(${b.tono},${a})`;
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 7); ctx.fill();
+    });
+    if (!quieto) requestAnimationFrame(dibujar);
+  }
+  addEventListener("resize", () => { medir(); if (quieto) dibujar(); });
+  medir(); dibujar();
+})();
+</script>
+</body>
+</html>
